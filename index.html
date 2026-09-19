@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J.A.R.V.I.S. System</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #030a16;
+      color: #00f0ff;
+      font-family: 'Courier New', Courier, monospace;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 背景カメラ映像 */
+    #webcam {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.25;
+      z-index: 1;
+    }
+
+    /* HUDオーバーレイ */
+    .hud-container {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* アニメーションリング */
+    .ring {
+      width: 260px;
+      height: 260px;
+      border: 4px solid transparent;
+      border-top: 4px solid #00f0ff;
+      border-bottom: 4px solid #00f0ff;
+      border-radius: 50%;
+      animation: spin 4s linear infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+    }
+
+    .ring-inner {
+      width: 180px;
+      height: 180px;
+      border: 2px dashed #00f0ff;
+      border-radius: 50%;
+      animation: spin-reverse 6s linear infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .core {
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, #00f0ff 0%, rgba(0,240,255,0.1) 70%);
+      border-radius: 50%;
+      box-shadow: 0 0 30px #00f0ff;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes spin-reverse {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
+    }
+
+    /* ステータス & 会話ログ */
+    .status-panel {
+      margin-top: 30px;
+      text-align: center;
+      background: rgba(3, 10, 22, 0.75);
+      padding: 15px 25px;
+      border: 1px solid #00f0ff;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+      width: 320px;
+    }
+
+    .btn {
+      margin-top: 15px;
+      background: transparent;
+      color: #00f0ff;
+      border: 1px solid #00f0ff;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: #00f0ff;
+      color: #030a16;
+      box-shadow: 0 0 15px #00f0ff;
+    }
+  </style>
+</head>
+<body>
+
+  <video id="webcam" autoplay playsinline muted></video>
+
+  <div class="hud-container">
+    <div class="ring">
+      <div class="ring-inner">
+        <div class="core"></div>
+      </div>
+    </div>
+
+    <div class="status-panel">
+      <p id="status">SYSTEM ONLINE</p>
+      <p id="output" style="margin-top: 10px; font-size: 0.9rem; color: #fff;"></p>
+      <button class="btn" onclick="startRecognition()">VOICE COMMAND</button>
+    </div>
+  </div>
+
+  <script>
+    // カメラの起動
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById('webcam').srcObject = stream;
+      } catch (err) {
+        console.warn("カメラへのアクセスが拒否されたか、利用できません。");
+      }
+    }
+    initCamera();
+
+    // 音声合成 (J.A.R.V.I.S.の発話)
+    function speak(text) {
+      const uttr = new SpeechSynthesisUtterance(text);
+      uttr.lang = 'ja-JP';
+      uttr.pitch = 0.9; // 低めのトーン
+      uttr.rate = 1.0;  // 話すスピード
+      window.speechSynthesis.speak(uttr);
+    }
+
+    // 音声認識 (コマンド受信)
+    function startRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("お使いのブラウザは音声認識に対応していません。Google Chrome等をお試しください。");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ja-JP';
+
+      document.getElementById('status').innerText = "LISTENING...";
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('output').innerText = `You: ${transcript}`;
+        processCommand(transcript);
+      };
+
+      recognition.onerror = () => {
+        document.getElementById('status').innerText = "SYSTEM ONLINE";
+      };
+
+      recognition.onend = () => {
+        document.getElementById('status').innerText = "SYSTEM ONLINE";
+      };
+
+      recognition.start();
+    }
+
+    // コマンド処理
+    function processCommand(cmd) {
+      if (cmd.includes("こんにちは") || cmd.includes("ジャーヴィス")) {
+        speak("こんにちは、サー。何かお手伝いすることはありますか？");
+      } else if (cmd.includes("時間") || cmd.includes("時刻")) {
+        const now = new Date();
+        const timeStr = `${now.getHours()}時${now.getMinutes()}分です。`;
+        speak(`現在の時刻は ${timeStr}`);
+      } else {
+        speak(`コマンド「${cmd}」を受け取りました。`);
+      }
+    }
+  </script>
+</body>
+</html>
