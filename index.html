@@ -2,7 +2,7 @@
 <html lang="ja" class="dark h-full">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
   <title>J.A.R.V.I.S. Multimodal Vision HUD System</title>
   
   <!-- Tailwind CSS CDN -->
@@ -18,13 +18,12 @@
         extend: {
           colors: {
             jarvis: {
-              cyan: '#00f0ff',
+              cyan: 'var(--theme-color, #00f0ff)',
               blue: '#0088ff',
               gold: '#ffb700',
               red: '#ff2a55',
               emerald: '#10b981',
-              dark: '#020712',
-              border: 'rgba(0, 240, 255, 0.3)'
+              dark: '#020712'
             }
           },
           fontFamily: {
@@ -38,20 +37,39 @@
   </script>
 
   <style>
+    :root {
+      --theme-color: #00f0ff;
+      --theme-glow: rgba(0, 240, 255, 0.4);
+      --hud-bg: rgba(4, 18, 38, 0.20); /* 超高透過仕様 */
+      --hud-border: rgba(0, 240, 255, 0.3);
+    }
+
+    /* バトルモード (Red Theme) */
+    body.mode-battle {
+      --theme-color: #ff2a55;
+      --theme-glow: rgba(255, 42, 85, 0.6);
+      --hud-border: rgba(255, 42, 85, 0.4);
+    }
+
+    /* サーマルモード (Thermal/Rainbow Vision) */
+    body.mode-thermal {
+      --theme-color: #00ffcc;
+      --theme-glow: rgba(0, 255, 204, 0.6);
+      --hud-border: rgba(0, 255, 204, 0.4);
+    }
+
+    body.mode-thermal #webcam,
+    body.mode-thermal #vision-preview-img {
+      filter: invert(100%) hue-rotate(180deg) saturate(300%) contrast(150%);
+    }
+
     body {
       background-color: #020712;
-      color: #00f0ff;
+      color: var(--theme-color);
       font-family: 'Share Tech Mono', monospace;
       overflow: hidden;
       user-select: none;
-    }
-
-    /* Seamless Camera Feed Overlay Transition */
-    #bg-backdrop {
-      transition: background-color 0.5s ease;
-    }
-    body.cam-active #bg-backdrop {
-      background-color: rgba(2, 7, 18, 0.25) !important;
+      transition: color 0.3s ease;
     }
 
     /* Holographic Cyber Grid Scanlines Effect */
@@ -69,44 +87,40 @@
       pointer-events: none;
     }
 
-    /* Cyber Glow Effects */
-    .glow-cyan {
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);
-    }
-    .glow-cyan-lg {
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.55);
-    }
-    .glow-gold {
-      box-shadow: 0 0 15px rgba(255, 183, 0, 0.4);
+    .glow-theme {
+      box-shadow: 0 0 15px var(--theme-glow);
     }
     .text-glow {
-      text-shadow: 0 0 8px rgba(0, 240, 255, 0.7);
+      text-shadow: 0 0 8px var(--theme-glow);
+    }
+    .border-theme {
+      border-color: var(--hud-border);
     }
 
-    /* Minimal Futuristic HUD Panels - 透明度 30% 仕様 (rgba 0.3) */
+    /* HUD Panels - 超高透過仕様 (15~20%) */
     .hud-panel {
       position: relative;
-      background: rgba(4, 18, 38, 0.30);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(0, 240, 255, 0.25);
+      background: var(--hud-bg);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid var(--hud-border);
       transition: all 0.3s ease;
     }
     .hud-panel::before {
       content: '';
       position: absolute;
       top: -1px; left: -1px;
-      width: 8px; height: 8px;
-      border-top: 2px solid #00f0ff;
-      border-left: 2px solid #00f0ff;
+      width: 6px; height: 6px;
+      border-top: 2px solid var(--theme-color);
+      border-left: 2px solid var(--theme-color);
     }
     .hud-panel::after {
       content: '';
       position: absolute;
       bottom: -1px; right: -1px;
-      width: 8px; height: 8px;
-      border-bottom: 2px solid #00f0ff;
-      border-right: 2px solid #00f0ff;
+      width: 6px; height: 6px;
+      border-bottom: 2px solid var(--theme-color);
+      border-right: 2px solid var(--theme-color);
     }
 
     /* Laser Visual Scan Beam Animation */
@@ -119,380 +133,326 @@
       position: absolute;
       left: 0; right: 0;
       height: 3px;
-      background: linear-gradient(90deg, transparent, #00f0ff, #ffffff, #00f0ff, transparent);
-      box-shadow: 0 0 15px #00f0ff, 0 0 30px #00f0ff;
-      animation: laserScan 1.8s ease-in-out infinite alternate;
+      background: linear-gradient(90deg, transparent, var(--theme-color), #ffffff, var(--theme-color), transparent);
+      box-shadow: 0 0 15px var(--theme-color);
+      animation: laserScan 1.5s ease-in-out infinite alternate;
       z-index: 40;
     }
 
     /* Rotating HUD Animations */
-    @keyframes spinClockwise {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    @keyframes spinCounterClockwise {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(-360deg); }
-    }
+    @keyframes spinClockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes spinCounterClockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
     @keyframes pulseCore {
-      0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.6)); }
-      50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 24px rgba(0, 240, 255, 0.9)); }
+      0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 10px var(--theme-color)); }
+      50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 20px var(--theme-color)); }
     }
 
-    .animate-spin-fast { animation: spinClockwise 10s linear infinite; }
-    .animate-spin-slow { animation: spinCounterClockwise 20s linear infinite; }
-    .animate-pulse-core { animation: pulseCore 3s ease-in-out infinite; }
+    .animate-spin-fast { animation: spinClockwise 8s linear infinite; }
+    .animate-spin-slow { animation: spinCounterClockwise 16s linear infinite; }
+    .animate-pulse-core { animation: pulseCore 2.5s ease-in-out infinite; }
+
+    /* Visual Target Zoom Scale Container */
+    .zoom-target {
+      transition: transform 0.2s ease-out;
+      transform-origin: center center;
+    }
 
     /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 3px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(2, 10, 22, 0.3);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(0, 240, 255, 0.3);
-      border-radius: 2px;
-    }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: rgba(2, 10, 22, 0.2); }
+    ::-webkit-scrollbar-thumb { background: var(--theme-color); border-radius: 2px; }
 
     /* ==========================================================================
-       スマホ最適化（スマホ横画面・コンパクトモード）スタイル定義
+       スマホモード超コンパクト仕様 (横画面推奨 & HUD超透け感)
        ========================================================================== */
     body.smartphone-mode {
-      font-size: 11px;
+      font-size: 10px;
+      --hud-bg: rgba(2, 10, 22, 0.12); /* 超高透過 12% */
     }
     body.smartphone-mode header {
-      padding-top: 2px;
-      padding-bottom: 2px;
-      font-size: 10px;
+      padding: 2px 8px !important;
     }
     body.smartphone-mode main {
-      padding: 4px;
+      padding: 2px 4px !important;
     }
     body.smartphone-mode .main-grid {
       grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
-      gap: 6px !important;
-      margin-top: 2px !important;
-      margin-bottom: 2px !important;
+      gap: 4px !important;
+      margin: 2px 0 !important;
     }
     body.smartphone-mode .panel-vision {
       grid-column: span 4 / span 4 !important;
-      min-height: 120px !important;
-      padding: 6px !important;
+      padding: 4px !important;
+      min-height: 90px !important;
     }
     body.smartphone-mode .panel-vision .preview-box {
-      height: 70px !important;
+      height: 60px !important;
     }
     body.smartphone-mode .panel-core {
       grid-column: span 4 / span 4 !important;
-      margin: 0 !important;
     }
     body.smartphone-mode .panel-core .arc-container {
-      width: 90px !important;
-      height: 90px !important;
+      width: 70px !important;
+      height: 70px !important;
     }
-    body.smartphone-mode .panel-core .arc-ring-1 {
-      width: 80px !important; height: 80px !important;
-    }
-    body.smartphone-mode .panel-core .arc-ring-2 {
-      width: 65px !important; height: 65px !important;
-    }
-    body.smartphone-mode .panel-core .arc-core-center {
-      width: 45px !important; height: 45px !important;
-    }
-    body.smartphone-mode .panel-core canvas {
-      height: 16px !important;
-      margin-top: 2px !important;
-    }
+    body.smartphone-mode .panel-core .arc-ring-1 { width: 60px !important; height: 60px !important; }
+    body.smartphone-mode .panel-core .arc-ring-2 { width: 48px !important; height: 48px !important; }
+    body.smartphone-mode .panel-core .arc-core-center { width: 34px !important; height: 34px !important; }
+    body.smartphone-mode .panel-core canvas { height: 12px !important; }
+
     body.smartphone-mode .panel-controls {
       grid-column: span 4 / span 4 !important;
-      padding: 6px !important;
-      space-y: 4px !important;
+      padding: 4px !important;
     }
-    body.smartphone-mode .panel-controls .quick-queries {
-      display: none !important; /* スマホ横画面では省スペースのため非表示 */
-    }
+    body.smartphone-mode .panel-controls .quick-queries { display: none !important; }
     body.smartphone-mode #response-box-container {
-      padding: 6px !important;
-      margin-top: 2px !important;
-      margin-bottom: 2px !important;
+      padding: 4px !important;
+      margin: 2px 0 !important;
     }
     body.smartphone-mode #chat-stream {
-      max-height: 60px !important;
+      max-height: 45px !important;
+      font-size: 10px !important;
     }
     body.smartphone-mode .console-bar {
-      padding: 4px !important;
-      border-radius: 10px !important;
+      padding: 2px 6px !important;
     }
     body.smartphone-mode .console-bar button {
-      padding: 6px !important;
-    }
-    body.smartphone-mode .console-bar input {
-      padding-top: 4px !important;
-      padding-bottom: 4px !important;
-      font-size: 11px !important;
+      padding: 4px 6px !important;
+      font-size: 10px !important;
     }
   </style>
 </head>
 
 <body class="h-screen w-screen flex flex-col justify-between overflow-hidden relative select-none">
 
-  <!-- Background Overlays & Live Webcam Feed -->
-  <div id="bg-backdrop" class="absolute inset-0 bg-[#020712]/70 z-0 transition-all duration-500"></div>
-  <video id="webcam" class="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none z-0 transition-opacity duration-700" autoplay playsinline muted></video>
+  <!-- Live Webcam Feed & Backdrop -->
+  <div id="bg-backdrop" class="absolute inset-0 bg-[#020712]/60 z-0 transition-all duration-500"></div>
+  <div class="absolute inset-0 overflow-hidden z-0 pointer-events-none">
+    <video id="webcam" class="zoom-target absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500" autoplay playsinline muted></video>
+  </div>
+  
   <div class="scanlines absolute inset-0 z-10"></div>
-  <div class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#00f0ff_1px,transparent_1px)] [background-size:20px_20px] z-10"></div>
 
   <!-- Laser Scanning Overlay Beam -->
   <div id="scanning-laser" class="hidden laser-beam"></div>
 
-  <!-- TOP HUD HEADER SYSTEM BAR (透過度30%) -->
-  <header class="relative z-30 w-full px-3 sm:px-6 py-1.5 bg-[#020712]/30 backdrop-blur-md border-b border-jarvis-border/40 flex justify-between items-center font-orbitron">
+  <!-- TOP HUD HEADER SYSTEM BAR -->
+  <header class="relative z-30 w-full px-3 sm:px-6 py-1 bg-[#020712]/20 backdrop-blur-sm border-b border-theme flex justify-between items-center font-orbitron">
     
     <!-- Title & System Status Badge -->
     <div class="flex items-center space-x-2">
       <div class="relative flex items-center justify-center">
-        <div class="w-2 h-2 bg-jarvis-cyan rounded-full animate-ping absolute"></div>
-        <div class="w-2 h-2 bg-jarvis-cyan rounded-full"></div>
+        <div class="w-2 h-2 rounded-full animate-ping absolute" style="background-color: var(--theme-color);"></div>
+        <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
-      <div>
-        <h1 class="text-sm sm:text-base font-black tracking-widest text-jarvis-cyan text-glow flex items-center gap-1.5">
-          J.A.R.V.I.S. <span id="system-mode-tag" class="text-[9px] px-1.5 py-0.2 rounded border border-jarvis-cyan/40 text-jarvis-gold font-mono font-normal">HUD V3.0</span>
-        </h1>
-      </div>
+      <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">HUD V4.0</span>
+      </h1>
     </div>
 
-    <!-- Live Telemetry Stats -->
-    <div class="flex items-center space-x-2 sm:space-x-4 text-[11px] font-mono">
+    <!-- Live Status Controls -->
+    <div class="flex items-center space-x-1.5 sm:space-x-3 text-[10px] font-mono">
       
-      <!-- Live Clock -->
-      <div class="text-right hidden sm:block">
-        <div id="sys-clock" class="font-bold text-jarvis-cyan tracking-wider">00:00:00</div>
-      </div>
-
-      <!-- Mode Toggle Button (スマホモード切替) -->
-      <button id="mode-toggle-btn" onclick="toggleSmartphoneMode()" class="px-2 py-1 rounded bg-jarvis-cyan/10 hover:bg-jarvis-cyan/30 border border-jarvis-cyan/50 text-jarvis-cyan text-[10px] font-mono transition flex items-center gap-1">
-        <span id="mode-btn-icon">📱</span>
-        <span id="mode-btn-text">スマホモード OFF</span>
+      <!-- Voice Auto-Listen Switch Indicator -->
+      <button id="voice-auto-btn" onclick="toggleContinuousListening()" class="px-1.5 py-0.5 rounded border border-theme bg-jarvis-cyan/10 text-[9px] flex items-center gap-1">
+        🎙️ 音声常時入力: <span id="auto-voice-state" class="font-bold text-emerald-400">ON</span>
       </button>
 
-      <!-- Battery Status -->
-      <div class="hidden md:flex items-center space-x-1.5 bg-[#041226]/30 px-2 py-0.5 rounded border border-jarvis-cyan/20">
-        <span class="text-gray-400 text-[9px]">PWR:</span>
-        <span id="battery-level" class="text-jarvis-emerald font-bold text-[11px]">100%</span>
-      </div>
+      <!-- Smartphone Mode Button -->
+      <button id="mode-toggle-btn" onclick="toggleSmartphoneMode()" class="px-1.5 py-0.5 rounded border border-theme bg-jarvis-cyan/10 text-[9px]">
+        📱 スマホ: <span id="mode-btn-text">OFF</span>
+      </button>
+
+      <!-- Live Clock -->
+      <div id="sys-clock" class="font-bold text-glow hidden sm:block">00:00:00</div>
     </div>
   </header>
 
   <!-- MAIN WORKSPACE DISPLAY -->
-  <main class="relative z-20 flex-1 flex flex-col justify-between p-2 sm:p-4 max-w-7xl mx-auto w-full overflow-hidden">
+  <main class="relative z-20 flex-1 flex flex-col justify-between p-2 max-w-7xl mx-auto w-full overflow-hidden">
 
-    <!-- TOP HUD STATUS LINE -->
-    <div class="w-full flex justify-between items-center text-[9px] sm:text-[10px] text-jarvis-cyan/70 font-mono mb-1">
-      <div>SYS.LOC: <span class="text-jarvis-cyan">36.40°N 138.25°E</span></div>
-      <div id="ai-status-indicator" class="flex items-center gap-1 text-emerald-400 font-bold">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> SYSTEM READY
+    <!-- TOP HUD STATUS LINE & SYSTEM MODES BAR -->
+    <div class="w-full flex justify-between items-center text-[9px] font-mono mb-1">
+      <!-- Mode Selection Buttons -->
+      <div class="flex items-center space-x-1">
+        <button onclick="setSystemVisualMode('normal')" id="btn-mode-normal" class="px-1.5 py-0.5 rounded border border-theme bg-jarvis-cyan/20 text-white font-bold">NORMAL</button>
+        <button onclick="setSystemVisualMode('battle')" id="btn-mode-battle" class="px-1.5 py-0.5 rounded border border-jarvis-red/40 bg-jarvis-red/10 text-jarvis-red hover:bg-jarvis-red/30 font-bold">BATTLE</button>
+        <button onclick="setSystemVisualMode('thermal')" id="btn-mode-thermal" class="px-1.5 py-0.5 rounded border border-emerald-400/40 bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/30 font-bold">THERMAL</button>
+      </div>
+
+      <!-- Zoom Indicator & Zoom Buttons -->
+      <div class="flex items-center space-x-1 bg-[#020712]/40 px-2 py-0.5 rounded border border-theme">
+        <span class="text-gray-400">ZOOM:</span>
+        <span id="zoom-level-text" class="font-bold text-glow">1.0x</span>
+        <button onclick="adjustZoom(-0.25)" class="px-1 bg-white/10 hover:bg-white/20 rounded font-bold ml-1">-</button>
+        <button onclick="adjustZoom(0.25)" class="px-1 bg-white/10 hover:bg-white/20 rounded font-bold">+</button>
       </div>
     </div>
 
-    <!-- MAIN MIDDLE GRID: VISION HUB, ARC REACTOR, & CONTROLS -->
-    <div class="main-grid grid grid-cols-1 lg:grid-cols-12 gap-3 my-auto items-center">
+    <!-- MAIN MIDDLE GRID -->
+    <div class="main-grid grid grid-cols-1 lg:grid-cols-12 gap-2 my-auto items-center">
       
       <!-- LEFT HUD PANEL: VISION TARGET -->
-      <div class="panel-vision lg:col-span-4 hud-panel p-2.5 rounded-xl flex flex-col justify-between min-h-[170px]">
-        <div class="w-full flex justify-between items-center border-b border-jarvis-cyan/30 pb-1 mb-1">
-          <span class="text-[11px] font-orbitron font-bold text-jarvis-cyan flex items-center gap-1">
-            📷 VISION INPUT
-          </span>
-          <span id="vision-mode-tag" class="text-[8px] px-1 py-0.2 rounded bg-jarvis-blue/20 text-jarvis-cyan border border-jarvis-cyan/30 uppercase">LIVE FEED</span>
+      <div class="panel-vision lg:col-span-4 hud-panel p-2 rounded-lg flex flex-col justify-between min-h-[140px]">
+        <div class="w-full flex justify-between items-center border-b border-theme pb-0.5 mb-1">
+          <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">📷 VISION HUD</span>
+          <span id="vision-mode-tag" class="text-[8px] px-1 rounded bg-white/10 uppercase">LIVE</span>
         </div>
 
         <!-- Vision Preview Container -->
-        <div class="preview-box relative w-full h-32 bg-black/40 rounded overflow-hidden border border-jarvis-cyan/30 flex items-center justify-center">
-          <img id="vision-preview-img" class="hidden w-full h-full object-contain z-10" alt="Vision target">
+        <div class="preview-box relative w-full h-28 bg-black/30 rounded overflow-hidden border border-theme flex items-center justify-center">
+          <img id="vision-preview-img" class="zoom-target hidden w-full h-full object-contain z-10" alt="Target">
           
-          <div id="vision-placeholder" class="text-center p-2 text-gray-400 text-[10px] font-mono">
-            <p>カメラ画像またはアップロード画像</p>
+          <div id="vision-placeholder" class="text-center p-1 text-gray-400 text-[9px] font-mono">
+            <p>カメラ / 画像スキャン</p>
           </div>
 
           <!-- Target Reticle Overlay -->
-          <div class="absolute inset-0 pointer-events-none flex items-center justify-center border border-dashed border-jarvis-cyan/20 m-1 rounded">
-            <div class="w-3 h-3 border-t-2 border-l-2 border-jarvis-cyan absolute top-0.5 left-0.5"></div>
-            <div class="w-3 h-3 border-t-2 border-r-2 border-jarvis-cyan absolute top-0.5 right-0.5"></div>
-            <div class="w-3 h-3 border-b-2 border-l-2 border-jarvis-cyan absolute bottom-0.5 left-0.5"></div>
-            <div class="w-3 h-3 border-b-2 border-r-2 border-jarvis-cyan absolute bottom-0.5 right-0.5"></div>
+          <div class="absolute inset-0 pointer-events-none flex items-center justify-center border border-dashed border-theme/30 m-0.5 rounded">
+            <div class="w-2 h-2 border-t-2 border-l-2 absolute top-0.5 left-0.5" style="border-color: var(--theme-color)"></div>
+            <div class="w-2 h-2 border-t-2 border-r-2 absolute top-0.5 right-0.5" style="border-color: var(--theme-color)"></div>
+            <div class="w-2 h-2 border-b-2 border-l-2 absolute bottom-0.5 left-0.5" style="border-color: var(--theme-color)"></div>
+            <div class="w-2 h-2 border-b-2 border-r-2 absolute bottom-0.5 right-0.5" style="border-color: var(--theme-color)"></div>
           </div>
 
-          <!-- Clear Preview Button -->
-          <button id="clear-image-btn" onclick="clearSelectedImage()" class="hidden absolute top-1 right-1 z-20 bg-black/80 text-jarvis-red border border-jarvis-red/60 rounded-full p-1 hover:bg-jarvis-red hover:text-white transition">
-            ✕
-          </button>
+          <button id="clear-image-btn" onclick="clearSelectedImage()" class="hidden absolute top-1 right-1 z-20 bg-black/80 text-jarvis-red rounded-full px-1.5 py-0.2 text-[9px]">✕</button>
         </div>
 
-        <!-- Vision Target Info Footer -->
-        <div class="w-full flex justify-between items-center text-[9px] text-gray-400 font-mono mt-1">
+        <div class="w-full flex justify-between items-center text-[8px] text-gray-400 font-mono mt-0.5">
           <span id="image-dimensions-info">RES: --</span>
           <span id="image-source-info">SRC: WEBCAM</span>
         </div>
       </div>
 
-      <!-- CENTER PANEL: ARC REACTOR & AUDIO VISUALIZER CORE -->
-      <div class="panel-core lg:col-span-4 flex flex-col items-center justify-center my-1 sm:my-0">
-        <div class="arc-container relative w-36 h-36 sm:w-48 sm:h-48 flex items-center justify-center">
-          
-          <!-- Outer Rotating Ring -->
-          <div class="absolute inset-0 rounded-full border border-dashed border-jarvis-cyan/30 animate-spin-slow"></div>
-          
-          <!-- Segmented Cyan Ring -->
-          <div class="arc-ring-1 absolute w-30 h-30 sm:w-40 sm:h-40 rounded-full border-2 border-jarvis-cyan/50 border-t-transparent border-b-transparent animate-spin-fast glow-cyan"></div>
-          
-          <!-- Inner Gold Accent Ring -->
-          <div class="arc-ring-2 absolute w-24 h-24 sm:w-32 sm:h-32 rounded-full border border-jarvis-gold/60 border-r-transparent border-l-transparent animate-spin-slow"></div>
+      <!-- CENTER PANEL: ARC REACTOR & AUDIO VISUALIZER -->
+      <div class="panel-core lg:col-span-4 flex flex-col items-center justify-center">
+        <div class="arc-container relative w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center">
+          <div class="absolute inset-0 rounded-full border border-dashed border-theme/30 animate-spin-slow"></div>
+          <div class="arc-ring-1 absolute w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-t-transparent border-b-transparent animate-spin-fast glow-theme" style="border-color: var(--theme-color);"></div>
+          <div class="arc-ring-2 absolute w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-jarvis-gold/60 border-r-transparent animate-spin-slow"></div>
 
           <!-- Arc Reactor Glowing Core -->
-          <div id="arc-core" onclick="triggerJarvisGreeting()" class="arc-core-center w-16 h-16 sm:w-22 sm:h-22 rounded-full bg-radial from-jarvis-cyan via-jarvis-blue/30 to-transparent flex items-center justify-center animate-pulse-core glow-cyan-lg border border-jarvis-cyan/80 cursor-pointer hover:scale-105 transition-transform">
-            <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-white/80 bg-jarvis-dark/60 flex flex-col items-center justify-center">
-              <span class="text-[8px] sm:text-[10px] font-orbitron font-black text-white text-glow">J.A.R.V.I.S.</span>
-              <span id="core-state-label" class="text-[6px] sm:text-[7px] font-mono text-jarvis-cyan">STANDBY</span>
+          <div id="arc-core" onclick="triggerJarvisGreeting()" class="arc-core-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-radial flex items-center justify-center animate-pulse-core cursor-pointer border border-theme" style="background: radial-gradient(circle, var(--theme-color) 0%, transparent 70%);">
+            <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-full border border-white/80 bg-jarvis-dark/80 flex flex-col items-center justify-center">
+              <span class="text-[7px] sm:text-[9px] font-orbitron font-black text-white">J.A.R.V.I.S.</span>
+              <span id="core-state-label" class="text-[5px] sm:text-[6px] font-mono">READY</span>
             </div>
           </div>
         </div>
 
-        <!-- Realtime Audio Frequency Wave visualizer -->
-        <div class="w-44 sm:w-56 mt-1">
-          <canvas id="audioVisualizer" class="w-full h-5 rounded opacity-80"></canvas>
+        <!-- Realtime Audio Frequency Visualizer -->
+        <div class="w-32 sm:w-44 mt-0.5">
+          <canvas id="audioVisualizer" class="w-full h-4 rounded opacity-80"></canvas>
         </div>
       </div>
 
-      <!-- RIGHT HUD PANEL: CONTROLS -->
-      <div class="panel-controls lg:col-span-4 hud-panel p-2.5 rounded-xl flex flex-col justify-between space-y-2">
-        <div class="border-b border-jarvis-cyan/30 pb-1">
-          <span class="text-[11px] font-orbitron font-bold text-jarvis-cyan flex items-center gap-1">
-            ⚡ CONTROLS
-          </span>
+      <!-- RIGHT HUD PANEL: CONTROLS & QUICK PRESETS -->
+      <div class="panel-controls lg:col-span-4 hud-panel p-2 rounded-lg flex flex-col justify-between space-y-1.5">
+        <div class="border-b border-theme pb-0.5">
+          <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">⚡ VOICE & CONTROLS</span>
         </div>
 
-        <div class="grid grid-cols-2 gap-1.5">
-          <!-- Snap Camera Button -->
-          <button onclick="captureAndAnalyzeCamera()" class="p-2 rounded bg-jarvis-cyan/10 hover:bg-jarvis-cyan/25 border border-jarvis-cyan text-jarvis-cyan font-orbitron font-bold text-[10px] flex flex-col items-center justify-center transition glow-cyan">
+        <div class="grid grid-cols-2 gap-1">
+          <button onclick="captureAndAnalyzeCamera()" class="p-1.5 rounded bg-white/5 hover:bg-white/15 border border-theme font-orbitron font-bold text-[9px] flex flex-col items-center justify-center transition">
             <span>📷 CAM SCAN</span>
-            <span class="text-[7px] font-mono text-gray-300 font-normal">カメラ解析</span>
+            <span class="text-[6px] font-mono text-gray-300 font-normal">カメラ解析</span>
           </button>
 
-          <!-- Upload Photo Button -->
-          <button onclick="triggerFileUpload()" class="p-2 rounded bg-jarvis-gold/10 hover:bg-jarvis-gold/25 border border-jarvis-gold/70 text-jarvis-gold font-orbitron font-bold text-[10px] flex flex-col items-center justify-center transition glow-gold">
+          <button onclick="triggerFileUpload()" class="p-1.5 rounded bg-white/5 hover:bg-white/15 border border-jarvis-gold/60 text-jarvis-gold font-orbitron font-bold text-[9px] flex flex-col items-center justify-center transition">
             <span>📁 UPLOAD</span>
-            <span class="text-[7px] font-mono text-gray-300 font-normal">画像選択</span>
+            <span class="text-[6px] font-mono text-gray-300 font-normal">画像選択</span>
           </button>
         </div>
 
-        <!-- Hidden File Input element -->
         <input type="file" id="photo-upload-input" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
 
-        <!-- Quick Vision Prompt Presets -->
-        <div class="quick-queries pt-1 border-t border-jarvis-border/30">
-          <span class="text-[9px] text-gray-400 font-mono block mb-1">QUICK COMMANDS:</span>
-          <div class="grid grid-cols-2 gap-1 text-[9px]">
-            <button onclick="sendQuickVisionQuery('これについて解析して説明してください。')" class="p-1 rounded bg-[#020712]/40 border border-jarvis-cyan/30 text-gray-200 hover:border-jarvis-cyan text-left truncate">
-              🔍 物体・状況解析
-            </button>
-            <button onclick="sendQuickVisionQuery('画像内の文字を読み取ってテキスト化してください。')" class="p-1 rounded bg-[#020712]/40 border border-jarvis-cyan/30 text-gray-200 hover:border-jarvis-cyan text-left truncate">
-              📝 文字読み取り
-            </button>
+        <div class="quick-queries pt-1 border-t border-theme/20 text-[8px]">
+          <span class="text-gray-400 block mb-0.5">音声コマンド例:</span>
+          <div class="grid grid-cols-2 gap-0.5 text-[8px]">
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「スマホモード」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「バトルモード」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「サーマルモード」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「ズームイン/アウト」</span>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- RESPONSE OVERLAY BOX (J.A.R.V.I.S. Dialogue Display) (透過度30%) -->
-    <div id="response-box-container" class="w-full max-w-4xl mx-auto hud-panel p-2.5 rounded-xl my-1 flex flex-col transition-all duration-300">
-      
-      <div class="flex items-center justify-between pb-1 border-b border-jarvis-border/30 mb-1">
-        <div class="flex items-center space-x-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-jarvis-cyan animate-pulse"></span>
-          <span class="text-[10px] font-orbitron font-bold text-jarvis-cyan">J.A.R.V.I.S. DIALOGUE LOG</span>
+    <!-- RESPONSE OVERLAY BOX (透過度超ハイパー仕様 12~15%) -->
+    <div id="response-box-container" class="w-full max-w-4xl mx-auto hud-panel p-2 rounded-lg my-1 flex flex-col">
+      <div class="flex items-center justify-between pb-0.5 border-b border-theme/30 mb-1">
+        <div class="flex items-center space-x-1">
+          <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background-color: var(--theme-color);"></span>
+          <span class="text-[9px] font-orbitron font-bold">J.A.R.V.I.S. DIALOGUE LOG</span>
         </div>
-        <div class="flex items-center space-x-2">
-          <button onclick="clearResponseLog()" class="text-[9px] font-mono text-gray-400 hover:text-jarvis-gold transition">
-            [CLEAR]
-          </button>
-        </div>
+        <button onclick="clearResponseLog()" class="text-[8px] font-mono text-gray-400 hover:text-white">[CLEAR]</button>
       </div>
 
-      <!-- Scrollable Message Display -->
-      <div id="chat-stream" class="max-h-24 sm:max-h-32 overflow-y-auto space-y-1.5 font-mono text-[11px] pr-1">
-        
-        <!-- Default Welcome Entry -->
-        <div class="p-2 rounded bg-jarvis-cyan/5 border border-jarvis-cyan/30 text-gray-200">
-          <div class="flex justify-between text-[9px] text-jarvis-cyan font-bold mb-0.5 font-orbitron">
+      <div id="chat-stream" class="max-h-20 sm:max-h-28 overflow-y-auto space-y-1 font-mono text-[10px] pr-1">
+        <div class="p-1.5 rounded bg-white/5 border border-theme/30 text-gray-200">
+          <div class="flex justify-between text-[8px] font-bold mb-0.5 font-orbitron">
             <span>J.A.R.V.I.S.</span>
             <span>SYSTEM ONLINE</span>
           </div>
-          <p id="latest-response" class="leading-relaxed text-[11px]">
-            サー、全システム正常に起動しました。「スマホモード」と発言するか右上ボタンを押すとモバイル横画面仕様に切り替わります。
+          <p id="latest-response" class="leading-relaxed">
+            サー、音声認識メインモードで待機中です。「スマホモード」「バトルモード」「サーマルモード」「ズームイン」「ズームアウト」と話しかけてください。
           </p>
         </div>
-
       </div>
 
-      <!-- Live Voice Input Transcript Indicator -->
-      <div id="voice-transcript-box" class="hidden mt-1 p-1 rounded bg-jarvis-gold/10 border border-jarvis-gold/40 text-jarvis-gold text-[10px] font-mono flex items-center gap-1.5 animate-pulse">
+      <!-- Live Voice Input Indicator -->
+      <div id="voice-transcript-box" class="mt-1 p-0.5 rounded bg-jarvis-gold/10 border border-jarvis-gold/40 text-jarvis-gold text-[9px] font-mono flex items-center gap-1 animate-pulse">
         <span class="w-1.5 h-1.5 rounded-full bg-jarvis-gold animate-ping"></span>
-        <span>音声認識中: "<span id="transcript-text" class="italic">...</span>"</span>
+        <span>音声入力: "<span id="transcript-text" class="italic">マイク起動中... 声を出してください</span>"</span>
       </div>
     </div>
 
-    <!-- FLOATING CONTROL CONSOLE (透過度30%) -->
-    <div class="console-bar w-full max-w-4xl mx-auto bg-[#020712]/30 backdrop-blur-md border border-jarvis-cyan/40 p-1.5 sm:p-2 rounded-xl glow-cyan flex items-center space-x-1.5">
+    <!-- FLOATING CONTROL CONSOLE (透過度15%仕様) -->
+    <div class="console-bar w-full max-w-4xl mx-auto bg-[#020712]/15 backdrop-blur-md border border-theme p-1 rounded-xl flex items-center space-x-1">
       
-      <!-- Microphone Voice Button -->
-      <button type="button" id="mic-btn" onclick="toggleVoiceRecognition()" title="Voice Input" class="p-2 rounded-lg bg-jarvis-cyan/10 border border-jarvis-cyan/40 hover:bg-jarvis-cyan/20 text-jarvis-cyan transition flex-shrink-0">
-        🎤
+      <button type="button" id="mic-btn" onclick="toggleVoiceRecognition()" title="Voice Control" class="p-1.5 rounded-lg border border-theme bg-jarvis-cyan/20 text-white transition flex-shrink-0 text-xs font-bold">
+        🎤 <span id="mic-status-label">音声 ON</span>
       </button>
 
-      <!-- Attach Photo File Button -->
-      <button type="button" onclick="triggerFileUpload()" title="Attach Photo" class="p-2 rounded-lg bg-jarvis-gold/10 border border-jarvis-gold/50 hover:bg-jarvis-gold/25 text-jarvis-gold transition flex-shrink-0">
+      <button type="button" onclick="triggerFileUpload()" title="Attach Image" class="p-1.5 rounded-lg border border-jarvis-gold/50 bg-jarvis-gold/10 text-jarvis-gold hover:bg-jarvis-gold/25 transition flex-shrink-0 text-xs">
         📁
       </button>
 
-      <!-- Text Input Form -->
-      <form id="chat-form" onsubmit="handleUserSubmit(event)" class="flex-1 flex items-center space-x-1.5">
-        <input type="text" id="user-input" placeholder="指示を入力してください... (例: 「スマホモード」)" autocomplete="off" class="w-full bg-[#020712]/60 border border-jarvis-cyan/30 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-jarvis-cyan font-mono">
+      <form id="chat-form" onsubmit="handleUserSubmit(event)" class="flex-1 flex items-center space-x-1">
+        <input type="text" id="user-input" placeholder="音声またはテキストで指示... (例: 「バトルモード」)" autocomplete="off" class="w-full bg-[#020712]/40 border border-theme/40 rounded-lg px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-theme font-mono">
         
-        <button type="submit" id="send-btn" class="p-1.5 sm:p-2 rounded-lg bg-jarvis-cyan/20 border border-jarvis-cyan hover:bg-jarvis-cyan hover:text-jarvis-dark text-jarvis-cyan transition flex-shrink-0 font-bold text-xs">
+        <button type="submit" id="send-btn" class="p-1 sm:p-1.5 rounded-lg border border-theme bg-theme/20 hover:bg-theme text-white transition flex-shrink-0 font-bold text-xs">
           送信
         </button>
       </form>
 
-      <!-- Camera Feed Toggle Button -->
-      <button type="button" id="cam-toggle-btn" onclick="toggleCamera()" title="Toggle Camera" class="p-2 rounded-lg border border-jarvis-cyan/40 bg-jarvis-cyan/5 hover:bg-jarvis-cyan/20 text-jarvis-cyan transition flex items-center gap-1 flex-shrink-0 text-xs">
-        📹 <span id="cam-btn-text" class="hidden md:inline font-mono">CAM</span>
+      <button type="button" id="cam-toggle-btn" onclick="toggleCamera()" title="Toggle Camera" class="p-1.5 rounded-lg border border-theme bg-white/5 text-white transition flex-shrink-0 text-xs">
+        📹
       </button>
 
     </div>
 
   </main>
 
-  <!-- Toast Notification Popups -->
-  <div id="toast-container" class="fixed bottom-16 left-4 z-50 space-y-1 pointer-events-none"></div>
+  <div id="toast-container" class="fixed bottom-14 left-3 z-50 space-y-1 pointer-events-none"></div>
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. LOCAL SYSTEM CONTROLLER (NO EXTERNAL API REQUIRED)
+       J.A.R.V.I.S. FULL SYSTEM CONTROLLER V4.0
        ========================================================================== */
 
     const appState = {
       isSmartphoneMode: false,
-      sfxEnabled: true,
+      visualMode: 'normal', // 'normal', 'battle', 'thermal'
+      zoomLevel: 1.0,
+      autoListen: true,
       cameraActive: false,
       isListening: false,
       isSpeaking: false,
-      chatHistory: [],
       currentImage: { base64: null, mimeType: null, dataUrl: null, source: null }
     };
 
-    // Cache DOM Elements
     const chatStream = document.getElementById('chat-stream');
     const userInput = document.getElementById('user-input');
     const micBtn = document.getElementById('mic-btn');
@@ -500,7 +460,7 @@
     const transcriptText = document.getElementById('transcript-text');
 
     /* ==========================================================================
-       1. WEB AUDIO API SOUND EFFECTS
+       1. WEB AUDIO API & SOUND EFFECTS
        ========================================================================== */
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -510,14 +470,13 @@
     }
 
     function playBeep(freq = 880, duration = 0.08) {
-      if (!appState.sfxEnabled) return;
       try {
         initAudio();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -527,28 +486,63 @@
     }
 
     function playJarvisChime() {
-      if (!appState.sfxEnabled) return;
       try {
         initAudio();
         const now = audioCtx.currentTime;
-        [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+        const freqs = appState.visualMode === 'battle' ? [400, 600, 800] : [523, 659, 783, 1046];
+        freqs.forEach((f, idx) => {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(f, now + idx * 0.04);
-          gain.gain.setValueAtTime(0.06, now + idx * 0.04);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.15);
+          gain.gain.setValueAtTime(0.05, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.12);
           osc.connect(gain);
           gain.connect(audioCtx.destination);
           osc.start(now + idx * 0.04);
-          osc.stop(now + idx * 0.04 + 0.15);
+          osc.stop(now + idx * 0.04 + 0.12);
         });
       } catch (e) {}
     }
 
     /* ==========================================================================
-       2. SMARTPHONE MODE TOGGLE LOGIC (スマホモード切替機能)
+       2. VISUAL MODES & ZOOM CONTROLLER
        ========================================================================== */
+    function setSystemVisualMode(mode) {
+      appState.visualMode = mode;
+      document.body.classList.remove('mode-battle', 'mode-thermal');
+
+      const tag = document.getElementById('system-mode-tag');
+
+      if (mode === 'battle') {
+        document.body.classList.add('mode-battle');
+        tag.innerText = 'BATTLE MODE';
+        showToast('⚔️ バトルモード起動: セキュリティシステム展開');
+        speakText('バトルモード起動。全ターゲットをロックします、サー。');
+      } else if (mode === 'thermal') {
+        document.body.classList.add('mode-thermal');
+        tag.innerText = 'THERMAL VISION';
+        showToast('🔥 サーマルモード起動: 熱感応フィルターON');
+        speakText('サーマルビジョンをアクティブに設定しました。');
+      } else {
+        tag.innerText = 'HUD V4.0';
+        showToast('標準ビジョンモードに復帰');
+        speakText('通常モードに復帰いたします。');
+      }
+      playBeep(1200);
+    }
+
+    function adjustZoom(delta) {
+      appState.zoomLevel = Math.max(1.0, Math.min(3.0, appState.zoomLevel + delta));
+      const targets = document.querySelectorAll('.zoom-target');
+      targets.forEach(el => {
+        el.style.transform = `scale(${appState.zoomLevel})`;
+      });
+      document.getElementById('zoom-level-text').innerText = `${appState.zoomLevel.toFixed(2)}x`;
+      showToast(`ズーム倍率: ${appState.zoomLevel.toFixed(2)}x`);
+      playBeep(950);
+    }
+
     function toggleSmartphoneMode(enable = null) {
       if (enable !== null) {
         appState.isSmartphoneMode = enable;
@@ -558,32 +552,35 @@
 
       const body = document.body;
       const modeBtnText = document.getElementById('mode-btn-text');
-      const modeTag = document.getElementById('system-mode-tag');
 
       if (appState.isSmartphoneMode) {
         body.classList.add('smartphone-mode');
-        modeBtnText.innerText = 'スマホモード ON';
-        modeTag.innerText = 'MOBILE HUD';
-        showToast('スマホモード（横画面最適化）を起動しました');
-        appendChatMessage('J.A.R.V.I.S.', 'サー、スマホ用横画面コンパクトHUDに移行いたしました。');
-        speakText('スマホモードに切り替えました、サー。');
+        modeBtnText.innerText = 'ON';
+        showToast('スマホ最適化・超シースルーHUD起動');
+        speakText('スマホ用超透過コンパクトHUDに移行しました。');
       } else {
         body.classList.remove('smartphone-mode');
-        modeBtnText.innerText = 'スマホモード OFF';
-        modeTag.innerText = 'HUD V3.0';
-        showToast('通常HUDモードに復帰しました');
-        appendChatMessage('J.A.R.V.I.S.', 'サー、通常のディスプレイスタイルに復帰しました。');
-        speakText('通常モードに戻りました。');
+        modeBtnText.innerText = 'OFF';
+        showToast('通常HUDモードに復帰');
+        speakText('通常レイアウトに復帰しました。');
       }
       playBeep(1100);
     }
 
+    function toggleContinuousListening() {
+      appState.autoListen = !appState.autoListen;
+      document.getElementById('auto-voice-state').innerText = appState.autoListen ? 'ON' : 'OFF';
+      showToast(`音声自動待機: ${appState.autoListen ? '有効' : '無効'}`);
+      if (appState.autoListen && !appState.isListening) {
+        startVoiceRecognition();
+      }
+    }
+
     /* ==========================================================================
-       3. WEBCAM & PHOTO UPLOAD LOGIC
+       3. WEBCAM & FILE ATTACHMENT
        ========================================================================== */
     async function toggleCamera() {
       const videoEl = document.getElementById('webcam');
-      const camBtn = document.getElementById('cam-toggle-btn');
 
       if (appState.cameraActive) {
         if (videoEl.srcObject) {
@@ -592,8 +589,6 @@
         }
         appState.cameraActive = false;
         videoEl.style.opacity = '0';
-        document.body.classList.remove('cam-active');
-        camBtn.classList.remove('bg-jarvis-cyan/30');
         showToast('カメラを停止しました');
       } else {
         try {
@@ -603,12 +598,10 @@
           videoEl.srcObject = stream;
           appState.cameraActive = true;
           videoEl.style.opacity = '0.85';
-          document.body.classList.add('cam-active');
-          camBtn.classList.add('bg-jarvis-cyan/30');
-          showToast('カメラ映像と同期しました');
+          showToast('カメラ映像を取得中');
           playBeep(900);
         } catch (err) {
-          showToast('カメラを使用できません', 'error');
+          showToast('カメラを開けませんでした', 'error');
         }
       }
     }
@@ -617,11 +610,11 @@
       const videoEl = document.getElementById('webcam');
       if (!appState.cameraActive) {
         await toggleCamera();
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 600));
       }
 
       if (!videoEl.srcObject || videoEl.videoWidth === 0) {
-        showToast('カメラ準備中...', 'error');
+        showToast('カメラ起動待ち...', 'error');
         return false;
       }
 
@@ -655,7 +648,7 @@
         const img = new Image();
         img.onload = () => {
           setVisionImageState(base64Data, mimeType, dataUrl, 'upload', `${img.width}x${img.height}`);
-          showToast(`画像を読み込みました`);
+          showToast(`画像をロードしました`);
           playJarvisChime();
         };
         img.src = dataUrl;
@@ -679,36 +672,223 @@
       placeholder.classList.add('hidden');
       clearBtn.classList.remove('hidden');
 
-      if (source === 'camera') {
-        modeTag.innerText = 'SNAP';
-        srcInfo.innerText = 'SRC: CAMERA';
-      } else {
-        modeTag.innerText = 'FILE';
-        srcInfo.innerText = 'SRC: UPLOAD';
-      }
+      modeTag.innerText = source === 'camera' ? 'SNAP' : 'FILE';
+      srcInfo.innerText = `SRC: ${source.toUpperCase()}`;
       dimInfo.innerText = `RES: ${dimensionsStr}`;
     }
 
     function clearSelectedImage() {
       appState.currentImage = { base64: null, mimeType: null, dataUrl: null, source: null };
-
       const imgEl = document.getElementById('vision-preview-img');
       const placeholder = document.getElementById('vision-placeholder');
       const clearBtn = document.getElementById('clear-image-btn');
-      const modeTag = document.getElementById('vision-mode-tag');
 
       imgEl.src = '';
       imgEl.classList.add('hidden');
       placeholder.classList.remove('hidden');
       clearBtn.classList.add('hidden');
-      modeTag.innerText = 'LIVE FEED';
-
       showToast('ターゲットをクリアしました');
     }
 
     /* ==========================================================================
-       4. AUDIO VISUALIZER
+       4. SPEECH RECOGNITION & CONTINUOUS LISTEN ENGINE
        ========================================================================== */
+    let recognition = null;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'ja-JP';
+
+      recognition.onstart = () => {
+        appState.isListening = true;
+        micBtn.classList.add('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
+        document.getElementById('mic-status-label').innerText = '認識中...';
+        transcriptBox.classList.remove('hidden');
+        document.getElementById('core-state-label').innerText = 'LISTEN';
+      };
+
+      recognition.onresult = (e) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          transcript += e.results[i][0].transcript;
+        }
+        transcriptText.innerText = transcript;
+
+        if (e.results[e.results.length - 1].isFinal) {
+          userInput.value = transcript;
+          handleUserSubmit(null);
+        }
+      };
+
+      recognition.onerror = () => {
+        appState.isListening = false;
+      };
+
+      recognition.onend = () => {
+        appState.isListening = false;
+        micBtn.classList.remove('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
+        document.getElementById('mic-status-label').innerText = '音声 ON';
+        document.getElementById('core-state-label').innerText = 'READY';
+
+        // 常時音声ONモードなら自動で聞き取り再開
+        if (appState.autoListen && !appState.isSpeaking) {
+          setTimeout(() => startVoiceRecognition(), 400);
+        }
+      };
+    }
+
+    function startVoiceRecognition() {
+      if (recognition && !appState.isListening) {
+        try { recognition.start(); } catch(e) {}
+      }
+    }
+
+    function toggleVoiceRecognition() {
+      if (!recognition) {
+        showToast('お使いのブラウザは音声認識に対応していません', 'error');
+        return;
+      }
+      if (appState.isListening) {
+        appState.autoListen = false;
+        recognition.stop();
+      } else {
+        appState.autoListen = true;
+        startVoiceRecognition();
+      }
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const cleanText = text.replace(/<[^>]*>?/gm, '');
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'ja-JP';
+      utterance.pitch = appState.visualMode === 'battle' ? 0.8 : 0.95;
+      utterance.rate = 1.05;
+
+      utterance.onstart = () => {
+        appState.isSpeaking = true;
+        document.getElementById('core-state-label').innerText = 'SPEAKING';
+      };
+
+      utterance.onend = () => {
+        appState.isSpeaking = false;
+        document.getElementById('core-state-label').innerText = 'READY';
+        if (appState.autoListen) {
+          setTimeout(() => startVoiceRecognition(), 300);
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    /* ==========================================================================
+       5. CORE LOCAL LOGIC ENGINE & INTENT RECOGNITION
+       ========================================================================== */
+    function parseAndExecuteVoiceCommands(query, hasImage) {
+      const q = query.toLowerCase();
+
+      // ズームコマンド
+      if (q.includes('ズームイン') || q.includes('拡大') || q.includes('近付')) {
+        adjustZoom(0.35);
+        return "ズームインを実行しました、サー。";
+      }
+      if (q.includes('ズームアウト') || q.includes('縮小') || q.includes('引いて')) {
+        adjustZoom(-0.35);
+        return "ズームアウトを実行しました、サー。";
+      }
+
+      // ビジュアルモードコマンド
+      if (q.includes('バトルモード') || q.includes('戦闘モード') || q.includes('レッドモード')) {
+        setSystemVisualMode('battle');
+        return "バトルモードに切り替えました。戦闘シミュレーションを起動します。";
+      }
+      if (q.includes('サーマルモード') || q.includes('熱感知') || q.includes('赤外線')) {
+        setSystemVisualMode('thermal');
+        return "サーマルビジョンを起動しました。熱源感知フィルターを有効化しています。";
+      }
+      if (q.includes('ノーマルモード') || q.includes('通常モード') || q.includes('標準モード')) {
+        setSystemVisualMode('normal');
+        return "通常のメインHUD表示に戻ります。";
+      }
+
+      // スマホモードコマンド
+      if (q.includes('スマホモード') || q.includes('スマートフォン') || q.includes('モバイルモード')) {
+        if (q.includes('解除') || q.includes('オフ')) {
+          toggleSmartphoneMode(false);
+          return "通常レイアウトに戻しました、サー。";
+        } else {
+          toggleSmartphoneMode(true);
+          return "スマホ用超透過コンパクトレイアウトに切り替えました、サー。";
+        }
+      }
+
+      // カメラ撮影コマンド
+      if (q.includes('スキャン') || q.includes('撮影') || q.includes('解析') || q.includes('これ何')) {
+        if (hasImage) {
+          return "サー、ターゲット画像を解析しました。空間および構造データを読み取りました。";
+        } else {
+          captureAndAnalyzeCamera();
+          return "カメラからのフレームを即座にキャプチャしてスキャンを開始しました、サー。";
+        }
+      }
+
+      // 汎用挨拶・会話
+      if (q.includes('こんにちは') || q.includes('ジャービス')) {
+        return "サー、いつでも音声コマンドをお聞きしております。";
+      }
+
+      return `「${query}」了解いたしました。システムマトリックスに反映しました。`;
+    }
+
+    /* ==========================================================================
+       6. SUBMISSION HANDLER & AUDIO VISUALIZER
+       ========================================================================== */
+    async function handleUserSubmit(e) {
+      if (e) e.preventDefault();
+      const query = userInput.value.trim();
+      const hasImg = !!appState.currentImage.base64;
+
+      if (!query && !hasImg) return;
+
+      userInput.value = '';
+      playBeep(750);
+
+      appendChatMessage('USER', query || '[ビジュアルスキャン実行]', false, hasImg ? appState.currentImage.dataUrl : null);
+      
+      triggerLaserScan(true);
+
+      setTimeout(() => {
+        triggerLaserScan(false);
+        const reply = parseAndExecuteVoiceCommands(query, hasImg);
+        
+        appendChatMessage('J.A.R.V.I.S.', reply);
+        speakText(reply);
+        playJarvisChime();
+      }, 300);
+    }
+
+    async function captureAndAnalyzeCamera() {
+      const success = await captureCameraFrame();
+      if (!success) return;
+      handleUserSubmit(null);
+    }
+
+    function triggerLaserScan(enable) {
+      const laser = document.getElementById('scanning-laser');
+      if (enable) {
+        laser.classList.remove('hidden');
+        document.getElementById('core-state-label').innerText = 'SCAN';
+      } else {
+        laser.classList.add('hidden');
+        document.getElementById('core-state-label').innerText = 'READY';
+      }
+    }
+
     function initVisualizer() {
       const canvas = document.getElementById('audioVisualizer');
       const ctx = canvas.getContext('2d');
@@ -718,21 +898,21 @@
       let frame = 0;
       function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const bars = 20;
+        const bars = 18;
         const barWidth = (canvas.width / bars) - 2;
 
         for (let i = 0; i < bars; i++) {
           let height;
           if (appState.isSpeaking || appState.isListening) {
-            height = Math.sin(frame * 0.2 + i * 0.5) * (canvas.height / 2) + (canvas.height / 2.2);
+            height = Math.sin(frame * 0.25 + i * 0.5) * (canvas.height / 2) + (canvas.height / 2.2);
           } else {
-            height = Math.sin(frame * 0.08 + i * 0.3) * 2 + 3;
+            height = Math.sin(frame * 0.08 + i * 0.3) * 1.5 + 2;
           }
 
           const x = i * (barWidth + 2);
           const y = (canvas.height - height) / 2;
 
-          ctx.fillStyle = appState.isListening ? 'rgba(255, 183, 0, 0.85)' : 'rgba(0, 240, 255, 0.75)';
+          ctx.fillStyle = appState.visualMode === 'battle' ? '#ff2a55' : (appState.visualMode === 'thermal' ? '#00ffcc' : '#00f0ff');
           ctx.fillRect(x, y, barWidth, height);
         }
 
@@ -743,209 +923,18 @@
     }
 
     /* ==========================================================================
-       5. SPEECH RECOGNITION & SYNTHESIS
-       ========================================================================== */
-    let recognition = null;
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = 'ja-JP';
-
-      recognition.onstart = () => {
-        appState.isListening = true;
-        micBtn.classList.add('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
-        transcriptBox.classList.remove('hidden');
-        document.getElementById('core-state-label').innerText = 'LISTEN';
-        playBeep(1000);
-      };
-
-      recognition.onresult = (e) => {
-        let transcript = '';
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          transcript += e.results[i][0].transcript;
-        }
-        transcriptText.innerText = transcript;
-        if (e.results[0].isFinal) {
-          userInput.value = transcript;
-          handleUserSubmit(new Event('submit'));
-        }
-      };
-
-      recognition.onerror = () => stopVoiceRecognition();
-      recognition.onend = () => stopVoiceRecognition();
-    }
-
-    function toggleVoiceRecognition() {
-      if (!recognition) {
-        showToast('お使いのブラウザは音声入力に対応していません', 'error');
-        return;
-      }
-      if (appState.isListening) {
-        recognition.stop();
-      } else {
-        recognition.start();
-      }
-    }
-
-    function stopVoiceRecognition() {
-      appState.isListening = false;
-      micBtn.classList.remove('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
-      transcriptBox.classList.add('hidden');
-      document.getElementById('core-state-label').innerText = 'STANDBY';
-    }
-
-    function speakText(text) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-
-      const cleanText = text.replace(/<[^>]*>?/gm, '');
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'ja-JP';
-      utterance.pitch = 0.95;
-      utterance.rate = 1.0;
-
-      utterance.onstart = () => {
-        appState.isSpeaking = true;
-        document.getElementById('core-state-label').innerText = 'SPEAKING';
-      };
-
-      utterance.onend = () => {
-        appState.isSpeaking = false;
-        document.getElementById('core-state-label').innerText = 'STANDBY';
-      };
-
-      window.speechSynthesis.speak(utterance);
-    }
-
-    /* ==========================================================================
-       6. LOCAL INTELLIGENCE & COMMAND PROCESSING (API完全非依存)
-       ========================================================================== */
-    function processLocalCommand(query, hasImage) {
-      const q = query.toLowerCase();
-
-      // 1. スマホモードコマンド判定 (音声・指示文)
-      if (q.includes('スマホモード') || q.includes('スマートフォンモード') || q.includes('モバイルモード') || q.includes('スマホ') || q.includes('横画面')) {
-        if (q.includes('解除') || q.includes('オフ') || q.includes('通常')) {
-          toggleSmartphoneMode(false);
-          return "通常モードに復帰いたしました、サー。";
-        } else {
-          toggleSmartphoneMode(true);
-          return "スマホ横画面モードに切り替えました、サー。HUDを最小化して配置を最適化しております。";
-        }
-      }
-
-      if (q.includes('通常モード') || q.includes('デスクトップモード')) {
-        toggleSmartphoneMode(false);
-        return "通常レイアウトに戻しました。";
-      }
-
-      // 2. カメラ・画像解析コマンド
-      if (hasImage) {
-        if (q.includes('文字') || q.includes('テキスト')) {
-          return "サー、対象画像よりスキャンを完了しました。テキスト領域を検出し、処理用データとして記録いたしました。";
-        }
-        return "サー、ビジュアルターゲットを解析しました。中央の主要オブジェクトおよび環境コンテキストを認識・取得完了いたしました。";
-      }
-
-      // 3. 挨拶・基本会話
-      if (q.includes('こんにちは') || q.includes('ハロー') || q.includes('ジャービス')) {
-        return "サー、いつでも指示を受ける準備が整っております。";
-      }
-
-      if (q.includes('状態') || q.includes('ステータス')) {
-        return `全システム正常に稼働中です。現在のレイアウト: ${appState.isSmartphoneMode ? 'スマホ横画面モード' : '標準HUDモード'} です。`;
-      }
-
-      // 汎用ローカル応答
-      return `「${query}」了解いたしました、サー。システムマトリックスにて同期・実行いたしました。`;
-    }
-
-    /* ==========================================================================
-       7. SUBMISSION HANDLER
-       ========================================================================== */
-    async function handleUserSubmit(e) {
-      if (e) e.preventDefault();
-      const query = userInput.value.trim();
-      const hasImg = !!appState.currentImage.base64;
-
-      if (!query && !hasImg) {
-        showToast('テキスト入力または画像を用意してください', 'error');
-        return;
-      }
-
-      userInput.value = '';
-      playBeep(750);
-
-      appendChatMessage('USER', query || '[視覚ターゲット解析の要請]', false, hasImg ? appState.currentImage.dataUrl : null);
-      
-      triggerLaserScan(true);
-
-      // ローカル応答生成 (即時またはわずかな遅延でシミュレート)
-      setTimeout(() => {
-        triggerLaserScan(false);
-        const responseText = processLocalCommand(query, hasImg);
-        
-        appendChatMessage('J.A.R.V.I.S.', responseText);
-        speakText(responseText);
-        playJarvisChime();
-      }, 400);
-    }
-
-    async function captureAndAnalyzeCamera() {
-      const success = await captureCameraFrame();
-      if (!success) return;
-      handleUserSubmit(null);
-    }
-
-    function sendQuickVisionQuery(presetText) {
-      if (!appState.currentImage.base64) {
-        captureCameraFrame().then(success => {
-          if (success) {
-            userInput.value = presetText;
-            handleUserSubmit(null);
-          }
-        });
-      } else {
-        userInput.value = presetText;
-        handleUserSubmit(null);
-      }
-    }
-
-    function triggerLaserScan(enable) {
-      const laser = document.getElementById('scanning-laser');
-      if (enable) {
-        laser.classList.remove('hidden');
-        document.getElementById('core-state-label').innerText = 'SCAN';
-      } else {
-        laser.classList.add('hidden');
-        document.getElementById('core-state-label').innerText = 'STANDBY';
-      }
-    }
-
-    /* ==========================================================================
-       8. UTILITIES
+       7. UTILITIES & INIT
        ========================================================================== */
     function appendChatMessage(sender, text, isError = false, thumbnailDataUrl = null) {
       const msgDiv = document.createElement('div');
-      msgDiv.className = `p-2 rounded border text-[11px] font-mono transition-all ${
-        sender === 'USER' 
-          ? 'bg-jarvis-cyan/10 border-jarvis-cyan/30 text-gray-100 ml-3' 
-          : 'bg-[#020712]/40 border-jarvis-cyan/30 text-jarvis-cyan'
+      msgDiv.className = `p-1.5 rounded border font-mono ${
+        sender === 'USER' ? 'bg-white/10 border-theme/30 text-gray-100 ml-2' : 'bg-black/30 border-theme text-white'
       }`;
 
-      let thumbHtml = '';
-      if (thumbnailDataUrl) {
-        thumbHtml = `
-          <div class="my-1 p-0.5 bg-black/40 border border-jarvis-cyan/30 rounded inline-block">
-            <img src="${thumbnailDataUrl}" class="h-14 w-auto object-contain rounded">
-          </div>
-        `;
-      }
+      let thumbHtml = thumbnailDataUrl ? `<div class="my-0.5"><img src="${thumbnailDataUrl}" class="h-10 rounded"></div>` : '';
 
       msgDiv.innerHTML = `
-        <div class="flex items-center justify-between text-[8px] ${sender === 'USER' ? 'text-gray-400' : 'text-jarvis-cyan'} font-bold mb-0.5 font-orbitron">
+        <div class="flex items-center justify-between text-[7px] text-gray-400 font-bold font-orbitron">
           <span>${sender}</span>
           <span>${new Date().toLocaleTimeString()}</span>
         </div>
@@ -959,7 +948,7 @@
 
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = "サー、全てのコンポーネントが稼働しております。「スマホモード」と仰っていただければいつでも切り替えます。";
+      const greeting = "サー、全システム待機中です。マイクは常にあなたの声を検知しています。";
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
@@ -976,8 +965,8 @@
     function showToast(msg, type = 'info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      toast.className = `px-2.5 py-1 rounded text-[10px] font-mono border backdrop-blur-md transition-all duration-300 ${
-        type === 'error' ? 'bg-jarvis-red/20 border-jarvis-red text-jarvis-red' : 'bg-jarvis-cyan/20 border-jarvis-cyan text-jarvis-cyan glow-cyan'
+      toast.className = `px-2 py-0.5 rounded text-[9px] font-mono border backdrop-blur-md transition-all duration-300 ${
+        type === 'error' ? 'bg-jarvis-red/20 border-jarvis-red text-jarvis-red' : 'bg-black/40 border-theme text-white glow-theme'
       }`;
       toast.innerHTML = `<span>[SYS]</span> <span>${msg}</span>`;
       container.appendChild(toast);
@@ -985,24 +974,22 @@
       setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
-      }, 2200);
+      }, 2000);
     }
 
-    function updateClockAndBattery() {
-      const now = new Date();
-      document.getElementById('sys-clock').innerText = now.toLocaleTimeString();
-
-      if ('getBattery' in navigator) {
-        navigator.getBattery().then(batt => {
-          document.getElementById('battery-level').innerText = `${Math.round(batt.level * 100)}%`;
-        }).catch(() => {});
-      }
+    function updateClock() {
+      document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString();
     }
 
     window.onload = () => {
       initVisualizer();
-      setInterval(updateClockAndBattery, 1000);
-      showToast('J.A.R.V.I.S. HUD システムオンライン');
+      setInterval(updateClock, 1000);
+      showToast('J.A.R.V.I.S. HUD V4.0 オンライン');
+      
+      // 起動時に自動でマイク認識をアタッチ
+      setTimeout(() => {
+        startVoiceRecognition();
+      }, 800);
     };
   </script>
 </body>
