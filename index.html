@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v7.0</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v7.5</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -60,7 +60,7 @@
       --hud-border: rgba(0, 255, 204, 0.45);
     }
 
-    /* ナイトビジョンモード (新機能) */
+    /* ナイトビジョンモード */
     body.mode-night {
       --theme-color: #00ff66;
       --theme-glow: rgba(0, 255, 102, 0.6);
@@ -219,7 +219,7 @@
         <div class="w-2.5 h-2.5 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
       <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
-        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">v7.0 HUD SYSTEM</span>
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">v7.5 HUD SYSTEM</span>
       </h1>
     </div>
 
@@ -228,10 +228,10 @@
       <!-- AIモデル選択 -->
       <div class="flex items-center gap-1 bg-black/50 px-1.5 py-0.5 rounded border border-theme/40 text-[8px]">
         <span>🤖 Model:</span>
-        <select id="model-select" onchange="changeModel()" class="bg-transparent text-white font-mono focus:outline-none max-w-[90px] sm:max-w-[130px]">
+        <select id="model-select" onchange="changeModel()" class="bg-transparent text-white font-mono focus:outline-none max-w-[100px] sm:max-w-[140px]">
+          <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+          <option value="gemini-3.6-pro">Gemini 3.6 Pro</option>
           <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-          <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
         </select>
       </div>
 
@@ -386,11 +386,11 @@
       <div id="chat-stream" class="max-h-24 sm:max-h-32 overflow-y-auto space-y-1.5 font-mono text-[10px] pr-1">
         <div class="p-1.5 rounded bg-white/5 border border-theme/30 text-gray-200">
           <div class="flex justify-between text-[8px] font-bold mb-0.5 font-orbitron">
-            <span>J.A.R.V.I.S. v7.0</span>
-            <span>SYSTEM INITIALIZED</span>
+            <span>J.A.R.V.I.S. v7.5</span>
+            <span>GEMINI 3.6 CORE LOADED</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            サー、J.A.R.V.I.S. HUD v7.0 のアップグレードが完了いたしました。ナイトビジョン、モデル切替、フルスクリーン対応が有効化されています。ご指示をどうぞ。
+            サー、J.A.R.V.I.S. HUD を Gemini 3.6 アーキテクチャにアップデートいたしました。最新の高速・高精度モデルにて各種スキャンおよび応答が可能です。ご指示をどうぞ。
           </p>
         </div>
       </div>
@@ -450,7 +450,7 @@
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V7.0 (UPGRADED)
+       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V7.5 (GEMINI 3.6 READY)
        ========================================================================== */
 
     const appState = {
@@ -462,7 +462,7 @@
       isListening: false,
       isSpeaking: false,
       isRecordingVideo: false,
-      selectedModel: 'gemini-2.5-flash',
+      selectedModel: 'gemini-3.6-flash',
       selectedSpeakerId: 'browser',
       availableSpeakers: [],
       voicevoxUrl: 'http://localhost:50021',
@@ -482,7 +482,7 @@
     const transcriptText = document.getElementById('transcript-text');
 
     /* ==========================================================================
-       1. WEB AUDIO & VOICE SYNTHESIS (VOICEVOX + WEB SPEECH API)
+       1. WEB AUDIO & VOICE SYNTHESIS
        ========================================================================== */
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -654,7 +654,7 @@
         showToast('🌐 リアルタイム双方向翻訳モード');
         speakText('翻訳モードを起動しました。');
       } else {
-        tag.innerText = 'v7.0 HUD SYSTEM';
+        tag.innerText = 'v7.5 HUD SYSTEM';
         showToast('標準モード復帰');
         speakText('通常システムに復帰いたしました。');
       }
@@ -688,7 +688,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (v7.0 MULTI-MODEL SUPPORT)
+       3. GEMINI API ENGINE (GEMINI 3.6 MULTI-MODEL SUPPORT)
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -711,7 +711,7 @@
         return "サー、Gemini APIキーが未設定です。画面上の「API」ボタンから設定してください。";
       }
 
-      const modelName = appState.selectedModel || 'gemini-2.5-flash';
+      const modelName = appState.selectedModel || 'gemini-3.6-flash';
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${appState.apiKey}`;
 
       let systemInstruction = "あなたはアイアンマンの高度人工知能「J.A.R.V.I.S. (ジャービス)」です。礼儀正しく、知的でスマート、少しのユーモアを添えて回答してください。「サー」と呼びかけてください。";
@@ -1065,7 +1065,6 @@
       draw();
     }
 
-    // カメラオーバーレイへのターゲット枠描画
     function initOverlayCanvas() {
       const canvas = document.getElementById('hud-overlay-canvas');
       const ctx = canvas.getContext('2d');
@@ -1086,7 +1085,6 @@
           ctx.lineWidth = 1.5;
           ctx.globalAlpha = 0.5;
 
-          // 中央レティクル
           ctx.beginPath();
           ctx.arc(cx, cy, 40, angle, angle + Math.PI * 1.5);
           ctx.stroke();
@@ -1138,7 +1136,7 @@
 
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = "サー、全システム正常稼働中です。ご指示をどうぞ。";
+      const greeting = "サー、Gemini 3.6 コアが正常に稼働中です。ご指示をどうぞ。";
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
@@ -1174,7 +1172,7 @@
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      showToast('J.A.R.V.I.S. v7.0 オンライン');
+      showToast('J.A.R.V.I.S. v7.5 (Gemini 3.6) オンライン');
       setTimeout(() => startVoiceRecognition(), 800);
     };
   </script>
