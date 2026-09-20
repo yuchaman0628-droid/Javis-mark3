@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v7.5</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.4</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -23,7 +23,6 @@
               gold: '#ffb700',
               red: '#ff2a55',
               emerald: '#10b981',
-              green: '#00ff66',
               purple: '#a855f7',
               dark: '#020712'
             }
@@ -42,46 +41,34 @@
     :root {
       --theme-color: #00f0ff;
       --theme-glow: rgba(0, 240, 255, 0.4);
-      --hud-bg: rgba(4, 18, 38, 0.25);
-      --hud-border: rgba(0, 240, 255, 0.35);
+      --hud-bg: rgba(4, 18, 38, 0.18);
+      --hud-border: rgba(0, 240, 255, 0.3);
     }
 
     /* バトルモード */
     body.mode-battle {
       --theme-color: #ff2a55;
       --theme-glow: rgba(255, 42, 85, 0.6);
-      --hud-border: rgba(255, 42, 85, 0.45);
+      --hud-border: rgba(255, 42, 85, 0.4);
     }
 
     /* サーマルモード */
     body.mode-thermal {
       --theme-color: #00ffcc;
       --theme-glow: rgba(0, 255, 204, 0.6);
-      --hud-border: rgba(0, 255, 204, 0.45);
+      --hud-border: rgba(0, 255, 204, 0.4);
     }
 
-    /* ナイトビジョンモード */
-    body.mode-night {
-      --theme-color: #00ff66;
-      --theme-glow: rgba(0, 255, 102, 0.6);
-      --hud-border: rgba(0, 255, 102, 0.45);
-    }
-
-    /* 翻訳モード */
+    /* 翻訳モード (パープル) */
     body.mode-translate {
       --theme-color: #a855f7;
       --theme-glow: rgba(168, 85, 247, 0.6);
-      --hud-border: rgba(168, 85, 247, 0.45);
+      --hud-border: rgba(168, 85, 247, 0.4);
     }
 
     body.mode-thermal #webcam,
     body.mode-thermal #vision-preview-img {
       filter: invert(100%) hue-rotate(180deg) saturate(300%) contrast(150%);
-    }
-
-    body.mode-night #webcam,
-    body.mode-night #vision-preview-img {
-      filter: sepia(100%) hue-rotate(80deg) saturate(400%) contrast(140%) brightness(1.1);
     }
 
     body {
@@ -110,13 +97,14 @@
 
     .glow-theme { box-shadow: 0 0 15px var(--theme-glow); }
     .text-glow { text-shadow: 0 0 8px var(--theme-glow); }
+    .border-theme { border-color: var(--hud-border); }
 
     /* HUD パネル */
     .hud-panel {
       position: relative;
       background: var(--hud-bg);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       border: 1px solid var(--hud-border);
       transition: all 0.3s ease;
     }
@@ -124,7 +112,7 @@
       content: '';
       position: absolute;
       top: -1px; left: -1px;
-      width: 8px; height: 8px;
+      width: 6px; height: 6px;
       border-top: 2px solid var(--theme-color);
       border-left: 2px solid var(--theme-color);
     }
@@ -132,7 +120,7 @@
       content: '';
       position: absolute;
       bottom: -1px; right: -1px;
-      width: 8px; height: 8px;
+      width: 6px; height: 6px;
       border-bottom: 2px solid var(--theme-color);
       border-right: 2px solid var(--theme-color);
     }
@@ -155,12 +143,12 @@
     @keyframes spinCounterClockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
     @keyframes pulseCore {
       0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 10px var(--theme-color)); }
-      50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 22px var(--theme-color)); }
+      50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 20px var(--theme-color)); }
     }
 
-    .animate-spin-fast { animation: spinClockwise 6s linear infinite; }
-    .animate-spin-slow { animation: spinCounterClockwise 14s linear infinite; }
-    .animate-pulse-core { animation: pulseCore 2.2s ease-in-out infinite; }
+    .animate-spin-fast { animation: spinClockwise 8s linear infinite; }
+    .animate-spin-slow { animation: spinCounterClockwise 16s linear infinite; }
+    .animate-pulse-core { animation: pulseCore 2.5s ease-in-out infinite; }
 
     .zoom-target {
       transition: transform 0.2s ease-out;
@@ -174,7 +162,7 @@
     /* スマホモード用レイアウト */
     body.smartphone-mode {
       font-size: 10px;
-      --hud-bg: rgba(2, 10, 22, 0.12);
+      --hud-bg: rgba(2, 10, 22, 0.10);
     }
     body.smartphone-mode header { padding: 2px 8px !important; }
     body.smartphone-mode main { padding: 2px 4px !important; }
@@ -191,10 +179,15 @@
     body.smartphone-mode .panel-vision .preview-box { height: 60px !important; }
     body.smartphone-mode .panel-core { grid-column: span 4 / span 4 !important; }
     body.smartphone-mode .panel-core .arc-container { width: 70px !important; height: 70px !important; }
+    body.smartphone-mode .panel-core .arc-ring-1 { width: 60px !important; height: 60px !important; }
+    body.smartphone-mode .panel-core .arc-ring-2 { width: 48px !important; height: 48px !important; }
+    body.smartphone-mode .panel-core .arc-core-center { width: 34px !important; height: 34px !important; }
+    body.smartphone-mode .panel-core canvas { height: 12px !important; }
     body.smartphone-mode .panel-controls { grid-column: span 4 / span 4 !important; padding: 4px !important; }
     body.smartphone-mode .panel-controls .quick-queries { display: none !important; }
     body.smartphone-mode #response-box-container { padding: 4px !important; margin: 2px 0 !important; }
     body.smartphone-mode #chat-stream { max-height: 50px !important; font-size: 10px !important; }
+    body.smartphone-mode .console-bar { padding: 2px 6px !important; }
   </style>
 </head>
 
@@ -204,53 +197,41 @@
   <div id="bg-backdrop" class="absolute inset-0 bg-[#020712]/60 z-0 transition-all duration-500"></div>
   <div class="absolute inset-0 overflow-hidden z-0 pointer-events-none">
     <video id="webcam" class="zoom-target absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500" autoplay playsinline muted></video>
-    <!-- カメラターゲット追尾オーバーレイ -->
-    <canvas id="hud-overlay-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
   </div>
   
   <div class="scanlines absolute inset-0 z-10"></div>
   <div id="scanning-laser" class="hidden laser-beam"></div>
 
   <!-- トップヘッダー HUD -->
-  <header class="relative z-30 w-full px-3 sm:px-6 py-1 bg-[#020712]/30 backdrop-blur-md border-b border-theme flex justify-between items-center font-orbitron">
+  <header class="relative z-30 w-full px-3 sm:px-6 py-1 bg-[#020712]/20 backdrop-blur-sm border-b border-theme flex justify-between items-center font-orbitron">
     <div class="flex items-center space-x-2">
       <div class="relative flex items-center justify-center">
-        <div class="w-2.5 h-2.5 rounded-full animate-ping absolute" style="background-color: var(--theme-color);"></div>
-        <div class="w-2.5 h-2.5 rounded-full" style="background-color: var(--theme-color);"></div>
+        <div class="w-2 h-2 rounded-full animate-ping absolute" style="background-color: var(--theme-color);"></div>
+        <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
       <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
-        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">v7.5 HUD SYSTEM</span>
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">GEMINI 3.6 FLASH</span>
       </h1>
     </div>
 
     <!-- コントロール・ステータス表示 -->
     <div class="flex items-center space-x-1.5 sm:space-x-3 text-[10px] font-mono">
-      <!-- AIモデル選択 -->
-      <div class="flex items-center gap-1 bg-black/50 px-1.5 py-0.5 rounded border border-theme/40 text-[8px]">
-        <span>🤖 Model:</span>
-        <select id="model-select" onchange="changeModel()" class="bg-transparent text-white font-mono focus:outline-none max-w-[100px] sm:max-w-[140px]">
-          <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
-          <option value="gemini-3.6-pro">Gemini 3.6 Pro</option>
-          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-        </select>
-      </div>
-
       <!-- APIキー設定ボタン -->
-      <button onclick="openApiKeyModal()" class="px-1.5 py-0.5 rounded border border-jarvis-gold/60 bg-jarvis-gold/10 text-jarvis-gold hover:bg-jarvis-gold/25 text-[9px] flex items-center gap-1 transition">
-        🔑 API
+      <button onclick="openApiKeyModal()" class="px-1.5 py-0.5 rounded border border-jarvis-gold/60 bg-jarvis-gold/10 text-jarvis-gold text-[9px] flex items-center gap-1">
+        🔑 API設定
       </button>
 
-      <!-- 音声（VOICEVOX/ブラウザ） -->
-      <div class="hidden sm:flex items-center gap-1 bg-black/50 px-1.5 py-0.5 rounded border border-theme/40 text-[8px]">
+      <!-- 声（ボイスボックス）切り替えセレクト -->
+      <div class="flex items-center gap-1 bg-black/40 px-1 py-0.5 rounded border border-theme/40 text-[8px]">
         <span>🗣️ Voice:</span>
         <select id="voice-select" onchange="changeVoice()" class="bg-transparent text-white font-mono focus:outline-none max-w-[80px] sm:max-w-[120px]">
           <option value="browser">Web標準音声</option>
         </select>
       </div>
 
-      <!-- フルスクリーン切替 -->
-      <button onclick="toggleFullScreen()" class="px-1.5 py-0.5 rounded border border-theme bg-white/5 text-[9px] hover:bg-white/15">
-        ⛶ 全画面
+      <!-- 音声常時入力 ON/OFF -->
+      <button id="voice-auto-btn" onclick="toggleContinuousListening()" class="px-1.5 py-0.5 rounded border border-theme bg-jarvis-cyan/10 text-[9px]">
+        🎙️ 音声: <span id="auto-voice-state" class="font-bold text-emerald-400">ON</span>
       </button>
 
       <!-- スマホモード ON/OFF -->
@@ -258,7 +239,7 @@
         📱 スマホ: <span id="mode-btn-text">OFF</span>
       </button>
 
-      <div id="sys-clock" class="font-bold text-glow hidden md:block">00:00:00</div>
+      <div id="sys-clock" class="font-bold text-glow hidden sm:block">00:00:00</div>
     </div>
   </header>
 
@@ -267,15 +248,14 @@
 
     <!-- モード選択 & ズームコントローラー -->
     <div class="w-full flex justify-between items-center text-[9px] font-mono mb-1">
-      <div class="flex items-center space-x-1 overflow-x-auto py-0.5">
-        <button onclick="setSystemVisualMode('normal')" id="btn-mode-normal" class="px-2 py-0.5 rounded border border-theme bg-jarvis-cyan/20 text-white font-bold">NORMAL</button>
-        <button onclick="setSystemVisualMode('translate')" id="btn-mode-translate" class="px-2 py-0.5 rounded border border-jarvis-purple/40 bg-jarvis-purple/10 text-jarvis-purple hover:bg-jarvis-purple/30 font-bold">🌐 翻訳</button>
-        <button onclick="setSystemVisualMode('battle')" id="btn-mode-battle" class="px-2 py-0.5 rounded border border-jarvis-red/40 bg-jarvis-red/10 text-jarvis-red hover:bg-jarvis-red/30 font-bold">BATTLE</button>
-        <button onclick="setSystemVisualMode('thermal')" id="btn-mode-thermal" class="px-2 py-0.5 rounded border border-emerald-400/40 bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/30 font-bold">THERMAL</button>
-        <button onclick="setSystemVisualMode('night')" id="btn-mode-night" class="px-2 py-0.5 rounded border border-jarvis-green/40 bg-jarvis-green/10 text-jarvis-green hover:bg-jarvis-green/30 font-bold">🌙 NIGHT</button>
+      <div class="flex items-center space-x-1">
+        <button onclick="setSystemVisualMode('normal')" id="btn-mode-normal" class="px-1.5 py-0.5 rounded border border-theme bg-jarvis-cyan/20 text-white font-bold">NORMAL</button>
+        <button onclick="setSystemVisualMode('translate')" id="btn-mode-translate" class="px-1.5 py-0.5 rounded border border-jarvis-purple/40 bg-jarvis-purple/10 text-jarvis-purple hover:bg-jarvis-purple/30 font-bold">🌐 翻訳モード</button>
+        <button onclick="setSystemVisualMode('battle')" id="btn-mode-battle" class="px-1.5 py-0.5 rounded border border-jarvis-red/40 bg-jarvis-red/10 text-jarvis-red hover:bg-jarvis-red/30 font-bold">BATTLE</button>
+        <button onclick="setSystemVisualMode('thermal')" id="btn-mode-thermal" class="px-1.5 py-0.5 rounded border border-emerald-400/40 bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/30 font-bold">THERMAL</button>
       </div>
 
-      <div class="flex items-center space-x-1 bg-[#020712]/50 px-2 py-0.5 rounded border border-theme">
+      <div class="flex items-center space-x-1 bg-[#020712]/40 px-2 py-0.5 rounded border border-theme">
         <span class="text-gray-400">ZOOM:</span>
         <span id="zoom-level-text" class="font-bold text-glow">1.0x</span>
         <button onclick="adjustZoom(-0.25)" class="px-1.5 bg-white/10 hover:bg-white/20 rounded font-bold ml-1">-</button>
@@ -286,28 +266,28 @@
     <!-- グリッドレイアウト -->
     <div class="main-grid grid grid-cols-1 lg:grid-cols-12 gap-2 my-auto items-center">
       
-      <!-- 左パネル: カメラ / ビジョン / WEB画像表示 -->
-      <div class="panel-vision lg:col-span-4 hud-panel p-2 rounded-lg flex flex-col justify-between min-h-[145px]">
+      <!-- 左パネル: カメラ / ビジョン / 検索結果画像 -->
+      <div class="panel-vision lg:col-span-4 hud-panel p-2 rounded-lg flex flex-col justify-between min-h-[140px]">
         <div class="w-full flex justify-between items-center border-b border-theme pb-0.5 mb-1">
-          <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">📷 VISION & HUD SCANNER</span>
-          <span id="vision-mode-tag" class="text-[8px] px-1 rounded bg-white/10 uppercase">STANDBY</span>
+          <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">📷 VISION & SEARCH HUD</span>
+          <span id="vision-mode-tag" class="text-[8px] px-1 rounded bg-white/10 uppercase">LIVE</span>
         </div>
 
-        <div class="preview-box relative w-full h-28 bg-black/40 rounded overflow-hidden border border-theme flex items-center justify-center">
+        <div class="preview-box relative w-full h-28 bg-black/30 rounded overflow-hidden border border-theme flex items-center justify-center">
           <img id="vision-preview-img" class="zoom-target hidden w-full h-full object-contain z-10" alt="Target">
           
           <div id="vision-placeholder" class="text-center p-1 text-gray-400 text-[9px] font-mono">
-            <p>カメラ / 画像ファイル / WEBスキャン</p>
+            <p>カメラ / 画像スキャン / WEB画像検索</p>
           </div>
 
           <div class="absolute inset-0 pointer-events-none flex items-center justify-center border border-dashed border-theme/30 m-0.5 rounded">
-            <div class="w-2.5 h-2.5 border-t-2 border-l-2 absolute top-0.5 left-0.5" style="border-color: var(--theme-color)"></div>
-            <div class="w-2.5 h-2.5 border-t-2 border-r-2 absolute top-0.5 right-0.5" style="border-color: var(--theme-color)"></div>
-            <div class="w-2.5 h-2.5 border-b-2 border-l-2 absolute bottom-0.5 left-0.5" style="border-color: var(--theme-color)"></div>
-            <div class="w-2.5 h-2.5 border-b-2 border-r-2 absolute bottom-0.5 right-0.5" style="border-color: var(--theme-color)"></div>
+            <div class="w-2 h-2 border-t-2 border-l-2 absolute top-0.5 left-0.5" style="border-color: var(--theme-color)"></div>
+            <div class="w-2 h-2 border-t-2 border-r-2 absolute top-0.5 right-0.5" style="border-color: var(--theme-color)"></div>
+            <div class="w-2 h-2 border-b-2 border-l-2 absolute bottom-0.5 left-0.5" style="border-color: var(--theme-color)"></div>
+            <div class="w-2 h-2 border-b-2 border-r-2 absolute bottom-0.5 right-0.5" style="border-color: var(--theme-color)"></div>
           </div>
 
-          <button id="clear-image-btn" onclick="clearSelectedImage()" class="hidden absolute top-1 right-1 z-20 bg-black/80 text-jarvis-red hover:bg-black rounded-full px-1.5 py-0.2 text-[9px] border border-jarvis-red">✕</button>
+          <button id="clear-image-btn" onclick="clearSelectedImage()" class="hidden absolute top-1 right-1 z-20 bg-black/80 text-jarvis-red rounded-full px-1.5 py-0.2 text-[9px]">✕</button>
         </div>
 
         <div class="w-full flex justify-between items-center text-[8px] text-gray-400 font-mono mt-0.5">
@@ -316,54 +296,62 @@
         </div>
       </div>
 
-      <!-- 中央パネル: アークリアクター Core -->
+      <!-- 中央パネル: アークリアクター -->
       <div class="panel-core lg:col-span-4 flex flex-col items-center justify-center">
         <div class="arc-container relative w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center">
-          <div class="absolute inset-0 rounded-full border border-dashed border-theme/40 animate-spin-slow"></div>
+          <div class="absolute inset-0 rounded-full border border-dashed border-theme/30 animate-spin-slow"></div>
           <div class="arc-ring-1 absolute w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-t-transparent border-b-transparent animate-spin-fast glow-theme" style="border-color: var(--theme-color);"></div>
-          <div class="arc-ring-2 absolute w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-jarvis-gold/70 border-r-transparent animate-spin-slow"></div>
+          <div class="arc-ring-2 absolute w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-jarvis-gold/60 border-r-transparent animate-spin-slow"></div>
 
-          <div id="arc-core" onclick="triggerJarvisGreeting()" class="arc-core-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-radial flex items-center justify-center animate-pulse-core cursor-pointer border border-theme" style="background: radial-gradient(circle, var(--theme-color) 0%, transparent 75%);">
-            <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-full border border-white/80 bg-jarvis-dark/90 flex flex-col items-center justify-center shadow-inner">
-              <span class="text-[6px] sm:text-[8px] font-orbitron font-black text-white tracking-tighter">JARVIS</span>
-              <span id="core-state-label" class="text-[5px] sm:text-[6px] font-mono font-bold text-glow">ONLINE</span>
+          <div id="arc-core" onclick="triggerJarvisGreeting()" class="arc-core-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-radial flex items-center justify-center animate-pulse-core cursor-pointer border border-theme" style="background: radial-gradient(circle, var(--theme-color) 0%, transparent 70%);">
+            <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-full border border-white/80 bg-jarvis-dark/80 flex flex-col items-center justify-center">
+              <span class="text-[6px] sm:text-[8px] font-orbitron font-black text-white">GEMINI 3.6</span>
+              <span id="core-state-label" class="text-[5px] sm:text-[6px] font-mono">READY</span>
             </div>
           </div>
         </div>
 
-        <div class="w-32 sm:w-44 mt-1">
-          <canvas id="audioVisualizer" class="w-full h-4 rounded opacity-85"></canvas>
+        <div class="w-32 sm:w-44 mt-0.5">
+          <canvas id="audioVisualizer" class="w-full h-4 rounded opacity-80"></canvas>
         </div>
       </div>
 
-      <!-- 右パネル: 思考・アクション & スキャン機能 -->
+      <!-- 右パネル: クイック入力 & スキャン機能 -->
       <div class="panel-controls lg:col-span-4 hud-panel p-2 rounded-lg flex flex-col justify-between space-y-1.5">
         <div class="border-b border-theme pb-0.5 flex justify-between items-center">
-          <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">⚡ COMMAND CENTER</span>
-          <span id="gemini-status-badge" class="text-[7px] px-1 rounded bg-emerald-500/20 text-emerald-400 font-bold">READY</span>
+          <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">⚡ VOICE & SEARCH</span>
+          <span id="gemini-status-badge" class="text-[7px] px-1 rounded bg-emerald-500/20 text-emerald-400">GEMINI AUTO ACTIVE</span>
         </div>
 
-        <div class="grid grid-cols-2 gap-1">
+        <!-- 3列グリッドに変更し、検索ボタンを追加 -->
+        <div class="grid grid-cols-3 gap-1">
           <button onclick="captureAndAnalyzeCamera()" class="p-1.5 rounded bg-white/5 hover:bg-white/15 border border-theme font-orbitron font-bold text-[9px] flex flex-col items-center justify-center transition">
-            <span>📷 CAM ANALYZE</span>
-            <span class="text-[6px] font-mono text-gray-300 font-normal">カメラ画像解析</span>
+            <span>📷 ANALYZE</span>
+            <span class="text-[6px] font-mono text-gray-300 font-normal">画像解析</span>
+          </button>
+
+          <button onclick="searchScreenContent()" class="p-1.5 rounded bg-white/5 hover:bg-white/15 border border-jarvis-blue/80 text-jarvis-blue font-orbitron font-bold text-[9px] flex flex-col items-center justify-center transition">
+            <span>🔍 SEARCH</span>
+            <span class="text-[6px] font-mono text-gray-300 font-normal">画面検索</span>
           </button>
 
           <button onclick="triggerFileUpload()" class="p-1.5 rounded bg-white/5 hover:bg-white/15 border border-jarvis-gold/60 text-jarvis-gold font-orbitron font-bold text-[9px] flex flex-col items-center justify-center transition">
             <span>📁 UPLOAD</span>
-            <span class="text-[6px] font-mono text-gray-300 font-normal">画像ファイル解析</span>
+            <span class="text-[6px] font-mono text-gray-300 font-normal">ファイル</span>
           </button>
         </div>
 
         <input type="file" id="photo-upload-input" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
 
         <div class="quick-queries pt-1 border-t border-theme/20 text-[8px]">
-          <span class="text-gray-400 block mb-0.5">音声コマンド例:</span>
-          <div class="grid grid-cols-2 gap-0.5 text-[8px]">
-            <span class="p-0.5 bg-black/40 border border-white/10 rounded cursor-pointer hover:bg-white/10" onclick="sendQuickCommand('カメラ起動')">「カメラ起動」</span>
-            <span class="p-0.5 bg-black/40 border border-white/10 rounded cursor-pointer hover:bg-white/10" onclick="sendQuickCommand('写真を撮影')">「写真撮影」</span>
-            <span class="p-0.5 bg-black/40 border border-white/10 rounded cursor-pointer hover:bg-white/10" onclick="sendQuickCommand('バトルモード')">「バトルモード」</span>
-            <span class="p-0.5 bg-black/40 border border-white/10 rounded cursor-pointer hover:bg-white/10" onclick="sendQuickCommand('ナイトモード')">「ナイトモード」</span>
+          <span class="text-gray-400 block mb-0.5">音声操作・AIコマンド例:</span>
+          <div class="grid grid-cols-3 gap-0.5 text-[7px] sm:text-[8px]">
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded truncate">「カメラ起動」</span>
+            <span class="p-0.5 bg-black/30 border border-jarvis-blue/40 text-jarvis-blue rounded truncate">「これを検索」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded truncate">「写真を撮影」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded truncate">「動画を開始」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded truncate">「録音開始」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded truncate">「録音停止」</span>
           </div>
         </div>
       </div>
@@ -375,22 +363,19 @@
       <div class="flex items-center justify-between pb-0.5 border-b border-theme/30 mb-1">
         <div class="flex items-center space-x-1">
           <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background-color: var(--theme-color);"></span>
-          <span class="text-[9px] font-orbitron font-bold">J.A.R.V.I.S. SYSTEM LOGS</span>
+          <span class="text-[9px] font-orbitron font-bold">J.A.R.V.I.S. LOG (GEMINI 3.6 FLASH)</span>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="exportChatLogs()" class="text-[8px] font-mono text-jarvis-gold hover:underline">💾 [EXPORT]</button>
-          <button onclick="clearResponseLog()" class="text-[8px] font-mono text-gray-400 hover:text-white">🗑️ [CLEAR]</button>
-        </div>
+        <button onclick="clearResponseLog()" class="text-[8px] font-mono text-gray-400 hover:text-white">[CLEAR]</button>
       </div>
 
-      <div id="chat-stream" class="max-h-24 sm:max-h-32 overflow-y-auto space-y-1.5 font-mono text-[10px] pr-1">
+      <div id="chat-stream" class="max-h-20 sm:max-h-28 overflow-y-auto space-y-1.5 font-mono text-[10px] pr-1">
         <div class="p-1.5 rounded bg-white/5 border border-theme/30 text-gray-200">
           <div class="flex justify-between text-[8px] font-bold mb-0.5 font-orbitron">
-            <span>J.A.R.V.I.S. v7.5</span>
-            <span>GEMINI 3.6 CORE LOADED</span>
+            <span>J.A.R.V.I.S. (GEMINI 3.6 FLASH)</span>
+            <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            サー、J.A.R.V.I.S. HUD を Gemini 3.6 アーキテクチャにアップデートいたしました。最新の高速・高精度モデルにて各種スキャンおよび応答が可能です。ご指示をどうぞ。
+            サー、システムアップデートが完了いたしました。「これを検索」「画面を調べて」などの音声コマンドにより、画面に映っている対象のWeb検索・解析が可能です。
           </p>
         </div>
       </div>
@@ -403,10 +388,14 @@
     </div>
 
     <!-- コンソール・送信バー -->
-    <div class="console-bar w-full max-w-4xl mx-auto bg-[#020712]/30 backdrop-blur-md border border-theme p-1 rounded-xl flex items-center space-x-1">
+    <div class="console-bar w-full max-w-4xl mx-auto bg-[#020712]/15 backdrop-blur-md border border-theme p-1 rounded-xl flex items-center space-x-1">
       
       <button type="button" id="mic-btn" onclick="toggleVoiceRecognition()" title="Voice Control" class="p-1.5 rounded-lg border border-theme bg-jarvis-cyan/20 text-white transition flex-shrink-0 text-xs font-bold">
         🎤 <span id="mic-status-label">音声 ON</span>
+      </button>
+
+      <button type="button" id="audio-record-btn" onclick="toggleAudioRecording()" title="音声録音（音声コマンド対応）" class="p-1.5 rounded-lg border border-jarvis-gold/60 bg-jarvis-gold/10 text-jarvis-gold transition flex-shrink-0 text-xs font-bold">
+        ⏺️ <span id="audio-record-label">録音</span>
       </button>
 
       <button type="button" onclick="triggerFileUpload()" title="Attach Image" class="p-1.5 rounded-lg border border-jarvis-gold/50 bg-jarvis-gold/10 text-jarvis-gold hover:bg-jarvis-gold/25 transition flex-shrink-0 text-xs">
@@ -414,7 +403,7 @@
       </button>
 
       <form id="chat-form" onsubmit="handleUserSubmit(event)" class="flex-1 flex items-center space-x-1">
-        <input type="text" id="user-input" placeholder="指示を入力または音声で発話 (例: 「カメラ起動」「写真撮影」「ナイトモード」)" autocomplete="off" class="w-full bg-[#020712]/50 border border-theme/40 rounded-lg px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-theme font-mono">
+        <input type="text" id="user-input" placeholder="音声またはメッセージで指示 (例: 「これを検索」「カメラ起動」「写真撮影」)" autocomplete="off" class="w-full bg-[#020712]/40 border border-theme/40 rounded-lg px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-theme font-mono">
         
         <button type="submit" id="send-btn" class="p-1 sm:p-1.5 rounded-lg border border-theme bg-theme/20 hover:bg-theme text-white transition flex-shrink-0 font-bold text-xs">
           送信
@@ -430,15 +419,15 @@
   </main>
 
   <!-- APIキー入力モーダル -->
-  <div id="api-key-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="hud-panel w-full max-w-md p-4 rounded-xl space-y-3 border-jarvis-gold">
+  <div id="api-key-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="hud-panel w-full max-w-md p-4 rounded-xl space-y-3 border-jarvis-gold/80">
       <h2 class="text-sm font-orbitron font-bold text-jarvis-gold flex items-center gap-1.5">
         🔑 GEMINI API KEY CONFIGURATION
       </h2>
-      <p class="text-[10px] text-gray-300 leading-relaxed">
-        Google Gemini AI による解析機能を使用するための API キーを設定してください。キーはブラウザの localStorage に安全に保管されます。
+      <p class="text-[10px] text-gray-300">
+        Google Gemini AIによるリアルタイム会話・WEB検索・画像解析機能を使用するためのAPIキーを入力してください。
       </p>
-      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力 (AIzaSy...)" class="w-full bg-black/70 border border-theme/60 rounded px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
+      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力 (AIzaSy...)" class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
       <div class="flex justify-end space-x-2 text-xs">
         <button onclick="closeApiKeyModal()" class="px-3 py-1 rounded bg-white/10 hover:bg-white/20">キャンセル</button>
         <button onclick="saveApiKey()" class="px-3 py-1 rounded bg-jarvis-gold/20 border border-jarvis-gold text-jarvis-gold font-bold hover:bg-jarvis-gold/40">保存</button>
@@ -446,11 +435,11 @@
     </div>
   </div>
 
-  <div id="toast-container" class="fixed bottom-16 left-3 z-50 space-y-1 pointer-events-none"></div>
+  <div id="toast-container" class="fixed bottom-14 left-3 z-50 space-y-1 pointer-events-none"></div>
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V7.5 (GEMINI 3.6 READY)
+       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.4 (SCREEN SEARCH EDITION)
        ========================================================================== */
 
     const appState = {
@@ -462,18 +451,20 @@
       isListening: false,
       isSpeaking: false,
       isRecordingVideo: false,
-      selectedModel: 'gemini-3.6-flash',
-      selectedSpeakerId: 'browser',
+      selectedSpeakerId: 'browser', // 'browser' または VOICEVOX speaker ID
       availableSpeakers: [],
-      voicevoxUrl: 'http://localhost:50021',
+      voicevoxUrl: 'http://localhost:50021', // VOICEVOX Engine URL
       apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || '',
-      currentImage: { base64: null, mimeType: null, dataUrl: null, source: null },
-      logs: []
+      currentImage: { base64: null, mimeType: null, dataUrl: null, source: null }
     };
 
     let mediaRecorder = null;
     let recordedChunks = [];
     let currentAudio = null;
+
+    let audioRecorder = null;
+    let audioRecordedChunks = [];
+    let audioRecordingStream = null;
 
     const chatStream = document.getElementById('chat-stream');
     const userInput = document.getElementById('user-input');
@@ -482,7 +473,7 @@
     const transcriptText = document.getElementById('transcript-text');
 
     /* ==========================================================================
-       1. WEB AUDIO & VOICE SYNTHESIS
+       1. WEB AUDIO & VOICE SYNTHESIS (VOICEVOX + WEB SPEECH API FALLBACK)
        ========================================================================== */
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -538,7 +529,10 @@
 
           speakers.forEach(speaker => {
             speaker.styles.forEach(style => {
-              const speakerObj = { id: style.id, name: `VOICEVOX: ${speaker.name} (${style.name})` };
+              const speakerObj = {
+                id: style.id,
+                name: `VOICEVOX: ${speaker.name} (${style.name})`
+              };
               appState.availableSpeakers.push(speakerObj);
 
               const option = document.createElement('option');
@@ -551,23 +545,33 @@
       } catch (e) {}
     }
 
-    function changeVoice() {
+    function changeVoice(speakerId = null) {
       const select = document.getElementById('voice-select');
+      if (speakerId !== null) {
+        select.value = speakerId;
+      }
       appState.selectedSpeakerId = select.value;
       const selectedOption = select.options[select.selectedIndex];
-      showToast(`音声設定: ${selectedOption ? selectedOption.innerText : '標準音声'}`);
-      speakText("音声設定を変更いたしました、サー。");
+      const speakerName = selectedOption ? selectedOption.innerText : '標準音声';
+      showToast(`音声設定変更: ${speakerName}`);
+      speakText("音声の設定を変更いたしました、サー。");
     }
 
-    function changeModel() {
-      const select = document.getElementById('model-select');
-      appState.selectedModel = select.value;
-      showToast(`AIモデル切り替え: ${appState.selectedModel}`);
-      speakText(`AIモデルを ${appState.selectedModel} に切り替えました。`);
+    function cycleNextVoice() {
+      if (appState.availableSpeakers.length <= 1) return;
+      const currentIdx = appState.availableSpeakers.findIndex(s => String(s.id) === String(appState.selectedSpeakerId));
+      const nextIdx = (currentIdx + 1) % appState.availableSpeakers.length;
+      const nextSpeaker = appState.availableSpeakers[nextIdx];
+      if (nextSpeaker) {
+        changeVoice(nextSpeaker.id);
+      }
     }
 
     async function speakText(text) {
-      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
       window.speechSynthesis.cancel();
 
       const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/https?:\/\/\S+/g, '').trim();
@@ -582,9 +586,16 @@
 
       if (appState.selectedSpeakerId !== 'browser' && !isNaN(appState.selectedSpeakerId)) {
         try {
-          const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, { method: 'POST' });
+          const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, {
+            method: 'POST'
+          });
           if (!queryRes.ok) throw new Error('VOICEVOX Query Error');
           const queryData = await queryRes.json();
+
+          if (appState.visualMode === 'battle') {
+            queryData.pitchScale = -0.05;
+            queryData.speedScale = 1.1;
+          }
 
           const synthRes = await fetch(`${appState.voicevoxUrl}/synthesis?speaker=${appState.selectedSpeakerId}`, {
             method: 'POST',
@@ -594,13 +605,16 @@
           if (!synthRes.ok) throw new Error('VOICEVOX Synthesis Error');
 
           const audioBlob = await synthRes.blob();
-          currentAudio = new Audio(URL.createObjectURL(audioBlob));
+          const audioUrl = URL.createObjectURL(audioBlob);
+
+          currentAudio = new Audio(audioUrl);
           currentAudio.onended = finishSpeaking;
           currentAudio.onerror = () => speakTextWebSpeech(cleanText);
           await currentAudio.play();
           return;
+
         } catch (err) {
-          console.warn('VOICEVOXフォールバック:', err);
+          console.warn('VOICEVOX発声失敗。Web Speech APIへフォールバック:', err);
         }
       }
 
@@ -608,62 +622,65 @@
     }
 
     function speakTextWebSpeech(text) {
-      if (!('speechSynthesis' in window)) { finishSpeaking(); return; }
+      if (!('speechSynthesis' in window)) {
+        finishSpeaking();
+        return;
+      }
+
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
       utterance.rate = 1.05;
       utterance.pitch = 0.95;
+
       utterance.onend = finishSpeaking;
       utterance.onerror = finishSpeaking;
+
       window.speechSynthesis.speak(utterance);
     }
 
     function finishSpeaking() {
       appState.isSpeaking = false;
       document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
-      if (appState.autoListen) setTimeout(() => startVoiceRecognition(), 300);
+      if (appState.autoListen) {
+        setTimeout(() => startVoiceRecognition(), 300);
+      }
     }
 
     /* ==========================================================================
-       2. VISUAL MODES, ZOOM & FULLSCREEN
+       2. VISUAL MODES & ZOOM CONTROLLER
        ========================================================================== */
     function setSystemVisualMode(mode) {
       appState.visualMode = mode;
-      document.body.classList.remove('mode-battle', 'mode-thermal', 'mode-translate', 'mode-night');
-
+      document.body.classList.remove('mode-battle', 'mode-thermal', 'mode-translate');
       const tag = document.getElementById('system-mode-tag');
 
       if (mode === 'battle') {
         document.body.classList.add('mode-battle');
         tag.innerText = 'BATTLE MODE';
         showToast('⚔️ バトルモード起動');
-        speakText('バトルモード起動。セキュリティインターフェース展開。');
+        speakText('バトルモード起動。全セキュリティ・システム展開。');
       } else if (mode === 'thermal') {
         document.body.classList.add('mode-thermal');
         tag.innerText = 'THERMAL VISION';
         showToast('🔥 サーマルモード起動');
-        speakText('サーマルビジョン起動。');
-      } else if (mode === 'night') {
-        document.body.classList.add('mode-night');
-        tag.innerText = 'NIGHT VISION';
-        showToast('🌙 ナイトビジョン起動');
-        speakText('ナイトビジョンモードを起動しました。');
+        speakText('サーマルビジョンをアクティブに設定。');
       } else if (mode === 'translate') {
         document.body.classList.add('mode-translate');
         tag.innerText = 'TRANSLATION MODE';
-        showToast('🌐 リアルタイム双方向翻訳モード');
-        speakText('翻訳モードを起動しました。');
+        showToast('🌐 リアルタイム双方向翻訳モード起動');
+        speakText('リアルタイム翻訳モードを起動しました。');
       } else {
-        tag.innerText = 'v7.5 HUD SYSTEM';
+        tag.innerText = 'GEMINI 3.6 FLASH';
         showToast('標準モード復帰');
-        speakText('通常システムに復帰いたしました。');
+        speakText('通常システムに復帰しました。');
       }
       playBeep(1200);
     }
 
     function adjustZoom(delta) {
-      appState.zoomLevel = Math.max(1.0, Math.min(3.5, appState.zoomLevel + delta));
-      document.querySelectorAll('.zoom-target').forEach(el => { el.style.transform = `scale(${appState.zoomLevel})`; });
+      appState.zoomLevel = Math.max(1.0, Math.min(3.0, appState.zoomLevel + delta));
+      const targets = document.querySelectorAll('.zoom-target');
+      targets.forEach(el => { el.style.transform = `scale(${appState.zoomLevel})`; });
       document.getElementById('zoom-level-text').innerText = `${appState.zoomLevel.toFixed(2)}x`;
       showToast(`ズーム: ${appState.zoomLevel.toFixed(2)}x`);
       playBeep(950);
@@ -671,95 +688,203 @@
 
     function toggleSmartphoneMode(enable = null) {
       appState.isSmartphoneMode = enable !== null ? enable : !appState.isSmartphoneMode;
-      document.body.classList.toggle('smartphone-mode', appState.isSmartphoneMode);
-      document.getElementById('mode-btn-text').innerText = appState.isSmartphoneMode ? 'ON' : 'OFF';
-      showToast(appState.isSmartphoneMode ? 'スマホ透過HUDモード' : '標準HUDモード');
+      const body = document.body;
+      const modeBtnText = document.getElementById('mode-btn-text');
+
+      if (appState.isSmartphoneMode) {
+        body.classList.add('smartphone-mode');
+        modeBtnText.innerText = 'ON';
+        showToast('スマホ専用 超透過HUDモード起動');
+        speakText('スマホ向け透過表示に移行しました。');
+      } else {
+        body.classList.remove('smartphone-mode');
+        modeBtnText.innerText = 'OFF';
+        showToast('通常HUDモード復帰');
+        speakText('通常のレイアウトに復帰しました。');
+      }
       playBeep(1100);
     }
 
-    function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-        showToast('フルスクリーン表示');
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-        showToast('フルスクリーン解除');
-      }
+    function toggleContinuousListening() {
+      appState.autoListen = !appState.autoListen;
+      document.getElementById('auto-voice-state').innerText = appState.autoListen ? 'ON' : 'OFF';
+      showToast(`音声常時入力: ${appState.autoListen ? '有効' : '無効'}`);
+      if (appState.autoListen && !appState.isListening) startVoiceRecognition();
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (GEMINI 3.6 MULTI-MODEL SUPPORT)
+       3. GEMINI 3.6 FLASH API ENGINE
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
       document.getElementById('api-key-modal').classList.remove('hidden');
     }
-    function closeApiKeyModal() { document.getElementById('api-key-modal').classList.add('hidden'); }
-    
+    function closeApiKeyModal() {
+      document.getElementById('api-key-modal').classList.add('hidden');
+    }
     function saveApiKey() {
       const key = document.getElementById('gemini-api-key-input').value.trim();
       appState.apiKey = key;
+      geminiModelCache = { expiresAt: 0, models: [] };
       localStorage.setItem('JARVIS_GEMINI_API_KEY', key);
       closeApiKeyModal();
       showToast('APIキーを保存しました');
       playJarvisChime();
     }
 
+    const GEMINI_MODEL_PREFERENCES = [
+      "gemini-3.5-flash",
+      "gemini-3.6-flash",
+      "gemini-3.7-flash",
+      "gemini-flash-latest"
+    ];
+
+    let geminiModelCache = { expiresAt: 0, models: [] };
+
+    async function getAvailableGeminiModels() {
+      const now = Date.now();
+      if (geminiModelCache.expiresAt > now && geminiModelCache.models.length) {
+        return geminiModelCache.models;
+      }
+
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models",
+        {
+          method: "GET",
+          headers: { "x-goog-api-key": appState.apiKey }
+        }
+      );
+
+      if (!response.ok) {
+        let message = "利用可能なGeminiモデル一覧を取得できませんでした。";
+        try {
+          const errData = await response.json();
+          message = errData.error?.message || message;
+        } catch (_) {}
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      const models = (data.models || [])
+        .filter(model => (model.supportedGenerationMethods || []).includes("generateContent"))
+        .map(model => (model.name || "").replace(/^models\//, ""))
+        .filter(Boolean);
+
+      geminiModelCache = {
+        expiresAt: now + 10 * 60 * 1000,
+        models
+      };
+
+      return models;
+    }
+
     async function callGeminiApi(promptText, base64Image = null, mimeType = null) {
       if (!appState.apiKey) {
         openApiKeyModal();
-        return "サー、Gemini APIキーが未設定です。画面上の「API」ボタンから設定してください。";
+        return "サー、Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。";
       }
 
-      const modelName = appState.selectedModel || 'gemini-3.6-flash';
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${appState.apiKey}`;
+      let availableModels = [];
+      try {
+        availableModels = await getAvailableGeminiModels();
+      } catch (listErr) {}
 
-      let systemInstruction = "あなたはアイアンマンの高度人工知能「J.A.R.V.I.S. (ジャービス)」です。礼儀正しく、知的でスマート、少しのユーモアを添えて回答してください。「サー」と呼びかけてください。";
-      
-      if (appState.visualMode === 'translate') {
-        systemInstruction = "あなたはリアルタイム通訳システムです。入力文を解析し、日本語なら自然な英語へ、外国語なら自然な日本語へ翻訳し、翻訳結果のみを簡潔に出力してください。";
+      const modelCandidates = [
+        ...GEMINI_MODEL_PREFERENCES.filter(model => availableModels.includes(model)),
+        ...GEMINI_MODEL_PREFERENCES.filter(model => !availableModels.includes(model))
+      ];
+
+      let systemInstruction = "あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。丁寧でスマート、少しユーモアのあるトーンで回答してください。「サー」と呼びかけてください。";
+
+      if (appState.visualMode === "translate") {
+        systemInstruction = "あなたはリアルタイム通訳HUDシステムです。入力された言語を解析し、日本語なら自然な英語へ、英語やその他の外国語なら自然な日本語へ翻訳し、翻訳後の文章のみを端的かつ速やかに出力してください。";
       }
 
       const contentsParts = [];
+
       if (base64Image) {
-        contentsParts.push({ inlineData: { data: base64Image, mimeType: mimeType || "image/jpeg" } });
+        contentsParts.push({
+          inlineData: {
+            data: base64Image,
+            mimeType: mimeType || "image/jpeg"
+          }
+        });
       }
+
       contentsParts.push({ text: promptText });
 
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: contentsParts }],
-            systemInstruction: { parts: [{ text: systemInstruction }] }
-          })
-        });
+      // Google検索グラウンディングツールを追加
+      const requestBody = {
+        contents: [{ parts: contentsParts }],
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        tools: [{ googleSearch: {} }] 
+      };
 
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error?.message || "Gemini APIエラー");
+      let lastError = null;
+
+      for (const model of modelCandidates) {
+        const endpoint =
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": appState.apiKey
+            },
+            body: JSON.stringify(requestBody)
+          });
+
+          if (!response.ok) {
+            let message = "Gemini APIエラー";
+            try {
+              const errData = await response.json();
+              message = errData.error?.message || message;
+            } catch (_) {}
+
+            if (
+              response.status === 404 &&
+              /not found|not supported|generatecontent/i.test(message)
+            ) {
+              lastError = new Error(message);
+              continue;
+            }
+
+            if (response.status === 401 || response.status === 403) {
+              throw new Error(
+                "Gemini APIキーの認証に失敗しました。Google AI Studioで現在のAPIキーを確認してください。"
+              );
+            }
+
+            throw new Error(message);
+          }
+
+          const data = await response.json();
+          const textResult =
+            data.candidates?.[0]?.content?.parts
+              ?.map(part => part.text || "")
+              .join("")
+              .trim() || "応答を取得できませんでした。";
+
+          return textResult;
+        } catch (err) {
+          lastError = err;
+          if (/認証に失敗|APIキー/i.test(err.message || "")) {
+            throw err;
+          }
         }
-
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "応答を取得できませんでした。";
-
-      } catch (err) {
-        console.error("Gemini Error:", err);
-        return `エラーが発生しました: ${err.message}`;
       }
-    }
 
-    function handleImageSearchRequest(query) {
-      const cleanQuery = query.replace(/(画像|写真|を探して|検索して|見せて)/g, '').trim();
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQuery)}?width=800&height=600&nologo=true`;
-      setVisionImageState(null, null, imageUrl, 'WEB SEARCH', '800x600');
-      const googleImgLink = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(cleanQuery)}`;
-      return `「${cleanQuery}」のイメージ画像をHUD領域にロードしました。<a href="${googleImgLink}" target="_blank" class="underline text-jarvis-cyan">Google画像検索</a>`;
+      console.error("Gemini Error:", lastError);
+      return `エラーが発生しました: ${
+        lastError?.message ||
+        "利用可能なGeminiモデルが見つかりませんでした。"
+      }`;
     }
 
     /* ==========================================================================
-       4. WEBCAM & MEDIA HANDLERS
+       4. WEBCAM & FILE HANDLERS & RECORDING
        ========================================================================== */
     async function toggleCamera(forceState = null) {
       const videoEl = document.getElementById('webcam');
@@ -787,7 +912,7 @@
           playBeep(900);
           return true;
         } catch (err) {
-          showToast('カメラ起動失敗', 'error');
+          showToast('カメラアクセス失敗', 'error');
           return false;
         }
       }
@@ -806,19 +931,80 @@
         retries++;
       }
 
+      if (!videoEl.videoWidth) {
+        showToast('カメラ映像のロードに失敗しました', 'error');
+        return;
+      }
+
       const canvas = document.createElement('canvas');
       canvas.width = videoEl.videoWidth || 1280;
       canvas.height = videoEl.videoHeight || 720;
-      canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
+      const dataUrl = canvas.toDataURL('image/png');
+      
       const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
-      a.download = `JARVIS_SNAP_${Date.now()}.png`;
+      a.href = dataUrl;
+      a.download = `JARVIS_CAP_${Date.now()}.png`;
       a.click();
 
       showToast('写真を保存しました');
       playJarvisChime();
-      speakText('写真を撮影し、ストレージに保存いたしました、サー。');
+      speakText('写真を撮影し、保存いたしました、サー。');
+    }
+
+    async function startVideoRecording() {
+      if (!appState.cameraActive) {
+        const ok = await toggleCamera(true);
+        if (!ok) return;
+      }
+
+      const videoEl = document.getElementById('webcam');
+      const stream = videoEl.srcObject;
+      if (!stream) {
+        showToast('カメラが起動していません', 'error');
+        return;
+      }
+
+      recordedChunks = [];
+      try {
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      } catch (e) {
+        mediaRecorder = new MediaRecorder(stream);
+      }
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `JARVIS_REC_${Date.now()}.webm`;
+        a.click();
+        showToast('動画ファイルを保存しました');
+        speakText('動画の録画を終了し、保存いたしました、サー。');
+      };
+
+      mediaRecorder.start();
+      appState.isRecordingVideo = true;
+      document.getElementById('core-state-label').innerText = 'REC';
+      showToast('動画撮影を開始しました');
+      playBeep(1000);
+      speakText('動画の撮影を開始いたします。');
+    }
+
+    function stopVideoRecording() {
+      if (mediaRecorder && appState.isRecordingVideo) {
+        mediaRecorder.stop();
+        appState.isRecordingVideo = false;
+        document.getElementById('core-state-label').innerText = 'READY';
+      } else {
+        showToast('動画撮影は行われていません', 'error');
+      }
     }
 
     async function captureCameraFrame() {
@@ -834,13 +1020,21 @@
         retries++;
       }
 
+      if (!videoEl.videoWidth) {
+        showToast('カメラ準備中...', 'error');
+        return false;
+      }
+
       const canvas = document.createElement('canvas');
       canvas.width = videoEl.videoWidth || 640;
       canvas.height = videoEl.videoHeight || 480;
-      canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      setVisionImageState(dataUrl.split(',')[1], 'image/jpeg', dataUrl, 'camera', `${canvas.width}x${canvas.height}`);
+      const base64Data = dataUrl.split(',')[1];
+
+      setVisionImageState(base64Data, 'image/jpeg', dataUrl, 'camera', `${canvas.width}x${canvas.height}`);
       return true;
     }
 
@@ -853,10 +1047,13 @@
       const reader = new FileReader();
       reader.onload = (e) => {
         const dataUrl = e.target.result;
+        const mimeType = file.type || 'image/jpeg';
+        const base64Data = dataUrl.split(',')[1];
+
         const img = new Image();
         img.onload = () => {
-          setVisionImageState(dataUrl.split(',')[1], file.type || 'image/jpeg', dataUrl, 'upload', `${img.width}x${img.height}`);
-          showToast('画像読み込み完了');
+          setVisionImageState(base64Data, mimeType, dataUrl, 'upload', `${img.width}x${img.height}`);
+          showToast('画像をロードしました');
           playJarvisChime();
         };
         img.src = dataUrl;
@@ -868,28 +1065,149 @@
     function setVisionImageState(base64, mimeType, dataUrl, source, dimensionsStr = '') {
       appState.currentImage = { base64, mimeType, dataUrl, source };
       const imgEl = document.getElementById('vision-preview-img');
+      const placeholder = document.getElementById('vision-placeholder');
+      const clearBtn = document.getElementById('clear-image-btn');
+      const modeTag = document.getElementById('vision-mode-tag');
+      const dimInfo = document.getElementById('image-dimensions-info');
+      const srcInfo = document.getElementById('image-source-info');
+
       imgEl.src = dataUrl;
       imgEl.classList.remove('hidden');
-      document.getElementById('vision-placeholder').classList.add('hidden');
-      document.getElementById('clear-image-btn').classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      clearBtn.classList.remove('hidden');
 
-      document.getElementById('vision-mode-tag').innerText = source.toUpperCase();
-      document.getElementById('image-source-info').innerText = `SRC: ${source.toUpperCase()}`;
-      document.getElementById('image-dimensions-info').innerText = `RES: ${dimensionsStr}`;
+      modeTag.innerText = source.toUpperCase();
+      srcInfo.innerText = `SRC: ${source.toUpperCase()}`;
+      dimInfo.innerText = `RES: ${dimensionsStr}`;
     }
 
     function clearSelectedImage() {
       appState.currentImage = { base64: null, mimeType: null, dataUrl: null, source: null };
       const imgEl = document.getElementById('vision-preview-img');
+      const placeholder = document.getElementById('vision-placeholder');
+      const clearBtn = document.getElementById('clear-image-btn');
+
       imgEl.src = '';
       imgEl.classList.add('hidden');
-      document.getElementById('vision-placeholder').classList.remove('hidden');
-      document.getElementById('clear-image-btn').classList.add('hidden');
-      showToast('ターゲットクリア');
+      placeholder.classList.remove('hidden');
+      clearBtn.classList.add('hidden');
+      showToast('ターゲット画像クリア');
     }
 
     /* ==========================================================================
-       5. SPEECH RECOGNITION
+       5. AUDIO RECORDING (マイク音声の録音・保存)
+       ========================================================================== */
+    function getSupportedAudioMimeType() {
+      const candidates = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/mp4'
+      ];
+      return candidates.find(type => MediaRecorder.isTypeSupported(type)) || '';
+    }
+
+    async function startAudioRecording() {
+      if (audioRecorder && audioRecorder.state === 'recording') return;
+
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        showToast('このブラウザは音声録音に対応していません', 'error');
+        return;
+      }
+
+      try {
+        audioRecordingStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          },
+          video: false
+        });
+
+        audioRecordedChunks = [];
+        const mimeType = getSupportedAudioMimeType();
+        audioRecorder = mimeType
+          ? new MediaRecorder(audioRecordingStream, { mimeType })
+          : new MediaRecorder(audioRecordingStream);
+
+        audioRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            audioRecordedChunks.push(event.data);
+          }
+        };
+
+        audioRecorder.onstop = () => {
+          const finalType = audioRecorder?.mimeType || mimeType || 'audio/webm';
+          const blob = new Blob(audioRecordedChunks, { type: finalType });
+          const url = URL.createObjectURL(blob);
+
+          const extension = finalType.includes('mp4') ? 'm4a'
+            : finalType.includes('ogg') ? 'ogg'
+            : 'webm';
+
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `JARVIS_AUDIO_${new Date().toISOString().replace(/[:.]/g, '-')}.${extension}`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+          if (audioRecordingStream) {
+            audioRecordingStream.getTracks().forEach(track => track.stop());
+            audioRecordingStream = null;
+          }
+
+          audioRecordedChunks = [];
+          showToast('音声録音を保存しました');
+          playJarvisChime();
+          speakText('音声録音を保存いたしました、サー。');
+        };
+
+        audioRecorder.onerror = () => {
+          showToast('音声録音中にエラーが発生しました', 'error');
+        };
+
+        audioRecorder.start(250);
+        document.getElementById('audio-record-label').innerText = '停止';
+        document.getElementById('audio-record-btn').classList.add('bg-jarvis-red/30', 'text-jarvis-red', 'animate-pulse');
+        document.getElementById('core-state-label').innerText = 'AUDIO REC';
+        showToast('音声録音を開始しました');
+        playBeep(1000);
+      } catch (err) {
+        console.error('Audio recording error:', err);
+        if (audioRecordingStream) {
+          audioRecordingStream.getTracks().forEach(track => track.stop());
+          audioRecordingStream = null;
+        }
+        showToast('マイクへのアクセスを許可してください', 'error');
+      }
+    }
+
+    function stopAudioRecording() {
+      if (!audioRecorder || audioRecorder.state !== 'recording') {
+        showToast('音声録音は行われていません', 'error');
+        return;
+      }
+
+      audioRecorder.stop();
+      document.getElementById('audio-record-label').innerText = '録音';
+      document.getElementById('audio-record-btn').classList.remove('bg-jarvis-red/30', 'text-jarvis-red', 'animate-pulse');
+      document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
+    }
+
+    function toggleAudioRecording() {
+      if (audioRecorder && audioRecorder.state === 'recording') {
+        stopAudioRecording();
+      } else {
+        startAudioRecording();
+      }
+    }
+
+    /* ==========================================================================
+       6. SPEECH RECOGNITION (安全な音声認識の制御)
        ========================================================================== */
     let recognition = null;
 
@@ -905,7 +1223,7 @@
         micBtn.classList.add('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
         document.getElementById('mic-status-label').innerText = '認識中...';
         transcriptBox.classList.remove('hidden');
-        document.getElementById('core-state-label').innerText = 'LISTEN';
+        document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'LISTEN';
       };
 
       recognition.onresult = (e) => {
@@ -921,11 +1239,18 @@
         }
       };
 
+      recognition.onerror = (err) => { 
+        if (err.error !== 'no-speech') {
+          console.warn('音声認識エラー:', err.error); 
+        }
+        appState.isListening = false;
+      };
+
       recognition.onend = () => {
         appState.isListening = false;
         micBtn.classList.remove('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
         document.getElementById('mic-status-label').innerText = '音声 ON';
-        document.getElementById('core-state-label').innerText = 'READY';
+        document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
 
         if (appState.autoListen && !appState.isSpeaking) {
           setTimeout(() => startVoiceRecognition(), 400);
@@ -935,12 +1260,17 @@
 
     function startVoiceRecognition() {
       if (recognition && !appState.isListening && !appState.isSpeaking) {
-        try { recognition.start(); } catch(e){}
+        try { 
+          recognition.start(); 
+        } catch(e) {}
       }
     }
 
     function toggleVoiceRecognition() {
-      if (!recognition) { showToast('音声認識非対応のブラウザです', 'error'); return; }
+      if (!recognition) {
+        showToast('お使いのブラウザは音声認識非対応です', 'error');
+        return;
+      }
       if (appState.isListening) {
         appState.autoListen = false;
         try { recognition.stop(); } catch(e){}
@@ -951,90 +1281,140 @@
     }
 
     /* ==========================================================================
-       6. CORE SUBMISSION & INTENTS
+       7. CORE SUBMISSION & INTENT DISPATCHER
        ========================================================================== */
-    function sendQuickCommand(text) {
-      userInput.value = text;
+       
+    // 専用の画面検索実行トリガー
+    async function searchScreenContent() {
+      userInput.value = "画面を検索";
       handleUserSubmit(null);
     }
 
     async function handleUserSubmit(e) {
       if (e) e.preventDefault();
-      const query = userInput.value.trim();
+      let query = userInput.value.trim();
       const hasImg = !!appState.currentImage.base64;
 
-      if (!query && !hasImg) return;
+      if (!query && !hasImg && !appState.cameraActive) return;
 
       userInput.value = '';
       playBeep(750);
       triggerLaserScan(true);
 
-      appendChatMessage('USER', query || '[ビジュアル解析実行]', false, hasImg ? appState.currentImage.dataUrl : null);
-
+      const originalQuery = query;
       const qLower = query.toLowerCase();
 
-      // カメラ制御
-      if (qLower.includes('カメラ') && (qLower.includes('起動') || qLower.includes('オン') || qLower.includes('開'))) {
+      // --- カメラ起動・操作コマンド ---
+      if (qLower.includes('カメラ') && (qLower.includes('起動') || qLower.includes('つけ') || qLower.includes('オン') || qLower.includes('開'))) {
         await toggleCamera(true);
         speakText('カメラを起動いたしました、サー。');
         triggerLaserScan(false);
         return;
       }
-      if (qLower.includes('カメラ') && (qLower.includes('停止') || qLower.includes('オフ') || qLower.includes('閉'))) {
+
+      if (qLower.includes('カメラ') && (qLower.includes('停止') || qLower.includes('消') || qLower.includes('オフ') || qLower.includes('閉'))) {
         await toggleCamera(false);
-        speakText('カメラを停止いたしました。');
+        speakText('カメラを停止いたしました、サー。');
         triggerLaserScan(false);
         return;
       }
 
-      // 写真撮影
-      if (qLower.includes('写真') || qLower.includes('撮影')) {
-        await takePhotoAndSave();
-        triggerLaserScan(false);
-        return;
+      // --- 写真撮影コマンド ---
+      if (qLower.includes('写真') || qLower.includes('パシャ') || qLower.includes('撮影して') || qLower.includes('スナップショット')) {
+        if (!qLower.includes('動画')) {
+          await takePhotoAndSave();
+          triggerLaserScan(false);
+          return;
+        }
       }
 
-      // モード切替
+      // --- 音声録音コマンド ---
+      const hasAudioRecorderWord = qLower.includes('録音') || qLower.includes('音声録音') || qLower.includes('ボイスレコーダー') || qLower.includes('レコーダー');
+      const wantsAudioStart = qLower.includes('録音開始') || qLower.includes('録音スタート') || qLower.includes('録音して') || (hasAudioRecorderWord && (qLower.includes('開始') || qLower.includes('スタート')));
+      const wantsAudioStop = qLower.includes('録音停止') || qLower.includes('録音終了') || qLower.includes('録音ストップ') || qLower.includes('録音やめて') || (hasAudioRecorderWord && (qLower.includes('停止') || qLower.includes('終了') || qLower.includes('ストップ')));
+      const isVideoCommand = qLower.includes('動画') || qLower.includes('録画');
+
+      if (!isVideoCommand && hasAudioRecorderWord && wantsAudioStart) { await startAudioRecording(); triggerLaserScan(false); return; }
+      if (!isVideoCommand && hasAudioRecorderWord && wantsAudioStop) { stopAudioRecording(); triggerLaserScan(false); return; }
+
+      // --- 動画撮影コマンド ---
+      if (qLower.includes('動画') && (qLower.includes('撮影') || qLower.includes('開始') || qLower.includes('録画'))) { await startVideoRecording(); triggerLaserScan(false); return; }
+      if ((qLower.includes('録画') && (qLower.includes('停止') || qLower.includes('終了') || qLower.includes('ストップ'))) || (qLower.includes('動画') && (qLower.includes('停止') || qLower.includes('終了')))) {
+        stopVideoRecording(); triggerLaserScan(false); return;
+      }
+
+      // モード等変更コマンド
+      if (qLower.includes('声を変え') || qLower.includes('声変更') || qLower.includes('ボイス変更')) { cycleNextVoice(); triggerLaserScan(false); return; }
+      if (qLower.includes('翻訳モード') || qLower.includes('通訳モード')) { setSystemVisualMode('translate'); triggerLaserScan(false); return; }
       if (qLower.includes('バトルモード')) { setSystemVisualMode('battle'); triggerLaserScan(false); return; }
       if (qLower.includes('サーマルモード')) { setSystemVisualMode('thermal'); triggerLaserScan(false); return; }
-      if (qLower.includes('ナイトモード') || qLower.includes('ナイトビジョン')) { setSystemVisualMode('night'); triggerLaserScan(false); return; }
       if (qLower.includes('ノーマルモード') || qLower.includes('通常モード')) { setSystemVisualMode('normal'); triggerLaserScan(false); return; }
+      if (qLower.includes('スマホモード')) { toggleSmartphoneMode(); triggerLaserScan(false); return; }
+      if (qLower.includes('ズームイン') || qLower.includes('拡大')) { adjustZoom(0.35); triggerLaserScan(false); return; }
+      if (qLower.includes('ズームアウト') || qLower.includes('縮小')) { adjustZoom(-0.35); triggerLaserScan(false); return; }
 
-      // 画像検索
-      if (qLower.includes('画像') && (qLower.includes('検索') || qLower.includes('探して') || qLower.includes('見せて'))) {
-        const reply = handleImageSearchRequest(query);
-        appendChatMessage('J.A.R.V.I.S.', reply);
-        speakText("画像の検索結果を反映いたしました。");
-        triggerLaserScan(false);
-        return;
+      // --- 画面検索 (スクリーンサーチ) コマンド ---
+      const wantsScreenSearch =
+        qLower.includes('画面') && (qLower.includes('検索') || qLower.includes('調べ')) ||
+        qLower.includes('映っている') && (qLower.includes('検索') || qLower.includes('調べ')) ||
+        qLower.includes('これを検索') || qLower.includes('これ検索') || qLower.includes('これを調べ') ||
+        qLower.includes('画像検索');
+
+      if (wantsScreenSearch) {
+        if (appState.cameraActive) {
+          await captureCameraFrame();
+        }
+        if (!appState.currentImage.base64) {
+           appendChatMessage('J.A.R.V.I.S.', "サー、対象の画像がありません。カメラを起動するか、画像をアップロードしてください。");
+           speakText("サー、対象の画像がありません。カメラを起動するか、画像をアップロードしてください。");
+           triggerLaserScan(false);
+           return;
+        }
+        // Geminiに検索を促すプロンプトに書き換え
+        query = "この画像に映っているものを特定し、それに関する最新の情報や詳細をGoogle検索機能も駆使して詳しく教えてください。";
       }
 
-      // GEMINI API 実行
+      // チャットログに追記 (上書きされた内部プロンプトではなく、ユーザーの意図または元の発言を表示)
+      const displayQuery = originalQuery || (wantsScreenSearch ? '[画面検索・WEB解析を実行]' : '[ビジュアル解析実行]');
+      const willAttachImage = appState.currentImage.base64 ? appState.currentImage.dataUrl : null;
+      appendChatMessage('USER', displayQuery, false, willAttachImage);
+
+      const finalQuery = query || "この画像を解析してください。";
+
+      // GEMINI AI 呼び出し
       document.getElementById('core-state-label').innerText = 'THINKING';
+      
       const aiResponse = await callGeminiApi(
-        query || "この画像を解析して要約してください。", 
+        finalQuery, 
         appState.currentImage.base64, 
         appState.currentImage.mimeType
       );
 
       triggerLaserScan(false);
-      appendChatMessage('J.A.R.V.I.S.', aiResponse);
+      appendChatMessage('J.A.R.V.I.S. (GEMINI)', aiResponse);
       speakText(aiResponse);
       playJarvisChime();
     }
 
     async function captureAndAnalyzeCamera() {
       const success = await captureCameraFrame();
-      if (success) handleUserSubmit(null);
+      if (!success) return;
+      handleUserSubmit(null);
     }
 
     function triggerLaserScan(enable) {
-      document.getElementById('scanning-laser').classList.toggle('hidden', !enable);
-      document.getElementById('core-state-label').innerText = enable ? 'SCAN' : (appState.isRecordingVideo ? 'REC' : 'READY');
+      const laser = document.getElementById('scanning-laser');
+      if (enable) {
+        laser.classList.remove('hidden');
+        document.getElementById('core-state-label').innerText = 'SCAN';
+      } else {
+        laser.classList.add('hidden');
+        document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
+      }
     }
 
     /* ==========================================================================
-       7. HUD CANVASES, LOGS & UTILS
+       8. AUDIO VISUALIZER & UTILS
        ========================================================================== */
     function initVisualizer() {
       const canvas = document.getElementById('audioVisualizer');
@@ -1049,14 +1429,17 @@
         const barWidth = (canvas.width / bars) - 2;
 
         for (let i = 0; i < bars; i++) {
-          let height = (appState.isSpeaking || appState.isListening)
-            ? Math.sin(frame * 0.25 + i * 0.5) * (canvas.height / 2) + (canvas.height / 2.2)
-            : Math.sin(frame * 0.08 + i * 0.3) * 1.5 + 2;
+          let height;
+          if (appState.isSpeaking || appState.isListening) {
+            height = Math.sin(frame * 0.25 + i * 0.5) * (canvas.height / 2) + (canvas.height / 2.2);
+          } else {
+            height = Math.sin(frame * 0.08 + i * 0.3) * 1.5 + 2;
+          }
 
           const x = i * (barWidth + 2);
           const y = (canvas.height - height) / 2;
 
-          ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--theme-color').trim() || '#00f0ff';
+          ctx.fillStyle = appState.visualMode === 'battle' ? '#ff2a55' : (appState.visualMode === 'thermal' ? '#00ffcc' : (appState.visualMode === 'translate' ? '#a855f7' : '#00f0ff'));
           ctx.fillRect(x, y, barWidth, height);
         }
         frame++;
@@ -1065,51 +1448,13 @@
       draw();
     }
 
-    function initOverlayCanvas() {
-      const canvas = document.getElementById('hud-overlay-canvas');
-      const ctx = canvas.getContext('2d');
-      let angle = 0;
-
-      function renderOverlay() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (appState.cameraActive) {
-          const cx = canvas.width / 2;
-          const cy = canvas.height / 2;
-          const themeColor = getComputedStyle(document.body).getPropertyValue('--theme-color').trim() || '#00f0ff';
-
-          ctx.save();
-          ctx.strokeStyle = themeColor;
-          ctx.lineWidth = 1.5;
-          ctx.globalAlpha = 0.5;
-
-          ctx.beginPath();
-          ctx.arc(cx, cy, 40, angle, angle + Math.PI * 1.5);
-          ctx.stroke();
-
-          ctx.beginPath();
-          ctx.arc(cx, cy, 25, -angle, -angle + Math.PI * 1.2);
-          ctx.stroke();
-
-          ctx.restore();
-          angle += 0.02;
-        }
-        requestAnimationFrame(renderOverlay);
-      }
-      renderOverlay();
-    }
-
     function appendChatMessage(sender, text, isError = false, thumbnailDataUrl = null) {
-      appState.logs.push({ time: new Date().toLocaleTimeString(), sender, text });
-
       const msgDiv = document.createElement('div');
       msgDiv.className = `p-1.5 rounded border font-mono ${
-        sender === 'USER' ? 'bg-white/10 border-theme/30 text-gray-100 ml-2' : 'bg-black/40 border-theme text-white'
+        sender === 'USER' ? 'bg-white/10 border-theme/30 text-gray-100 ml-2' : 'bg-black/30 border-theme text-white'
       }`;
 
-      let thumbHtml = thumbnailDataUrl ? `<div class="my-0.5"><img src="${thumbnailDataUrl}" class="h-10 rounded border border-theme"></div>` : '';
+      let thumbHtml = thumbnailDataUrl ? `<div class="my-0.5"><img src="${thumbnailDataUrl}" class="h-10 rounded"></div>` : '';
 
       msgDiv.innerHTML = `
         <div class="flex items-center justify-between text-[7px] text-gray-400 font-bold font-orbitron">
@@ -1124,26 +1469,15 @@
       chatStream.scrollTop = chatStream.scrollHeight;
     }
 
-    function exportChatLogs() {
-      if (!appState.logs.length) { showToast('出力するログがありません'); return; }
-      const blob = new Blob([JSON.stringify(appState.logs, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `JARVIS_LOGS_${Date.now()}.json`;
-      a.click();
-      showToast('対話ログをエクスポートしました');
-    }
-
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = "サー、Gemini 3.6 コアが正常に稼働中です。ご指示をどうぞ。";
+      const greeting = "サー、システムは正常動作中です。「これを検索」とご指示いただければWeb検索を行います。";
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
 
     function clearResponseLog() {
       chatStream.innerHTML = '';
-      appState.logs = [];
       showToast('ログ削除完了');
     }
 
@@ -1151,7 +1485,7 @@
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = `px-2 py-0.5 rounded text-[9px] font-mono border backdrop-blur-md transition-all duration-300 ${
-        type === 'error' ? 'bg-jarvis-red/20 border-jarvis-red text-jarvis-red' : 'bg-black/50 border-theme text-white glow-theme'
+        type === 'error' ? 'bg-jarvis-red/20 border-jarvis-red text-jarvis-red' : 'bg-black/40 border-theme text-white glow-theme'
       }`;
       toast.innerHTML = `<span>[SYS]</span> <span>${msg}</span>`;
       container.appendChild(toast);
@@ -1162,18 +1496,25 @@
       }, 2000);
     }
 
-    function updateClock() {
-      document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString();
-    }
+    function updateClock() { document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString(); }
 
     window.onload = () => {
       initVisualizer();
-      initOverlayCanvas();
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      showToast('J.A.R.V.I.S. v7.5 (Gemini 3.6) オンライン');
+      showToast('J.A.R.V.I.S. HUD システムオンライン');
+
       setTimeout(() => startVoiceRecognition(), 800);
+
+      window.addEventListener('beforeunload', () => {
+        if (audioRecordingStream) {
+          audioRecordingStream.getTracks().forEach(track => track.stop());
+        }
+        if (document.getElementById('webcam')?.srcObject) {
+          document.getElementById('webcam').srcObject.getTracks().forEach(track => track.stop());
+        }
+      });
     };
   </script>
 </body>
