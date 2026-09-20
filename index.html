@@ -221,11 +221,11 @@
         🔑 API設定
       </button>
 
-      <!-- 声（ボイス）切り替えセレクト -->
+      <!-- 声（ボイスボックス）切り替えセレクト -->
       <div class="flex items-center gap-1 bg-black/40 px-1 py-0.5 rounded border border-theme/40 text-[8px]">
         <span>🗣️ Voice:</span>
         <select id="voice-select" onchange="changeVoice()" class="bg-transparent text-white font-mono focus:outline-none max-w-[80px] sm:max-w-[120px]">
-          <option value="">(読み込み中)</option>
+          <option value="">(接続確認中...)</option>
         </select>
       </div>
 
@@ -439,14 +439,16 @@
       isListening: false,
       isSpeaking: false,
       isRecordingVideo: false,
-      selectedVoiceIndex: 0,
-      availableVoices: [],
+      selectedSpeakerId: 3, // VOICEVOX speaker ID (デフォルト: 3)
+      availableSpeakers: [],
+      voicevoxUrl: 'http://localhost:50021', // VOICEVOX EngineのURL
       apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || 'AQ.Ab8RN6JiOfdrLflMuTk0xsPuXT189ROg4umdy5qXDmgZptMXaw',
       currentImage: { base64: null, mimeType: null, dataUrl: null, source: null }
     };
 
     let mediaRecorder = null;
     let recordedChunks = [];
+    let currentAudio = null; // 現在再生中のVOICEVOX Audioオブジェクト
 
     const chatStream = document.getElementById('chat-stream');
     const userInput = document.getElementById('user-input');
@@ -455,7 +457,7 @@
     const transcriptText = document.getElementById('transcript-text');
 
     /* ==========================================================================
-       1. WEB AUDIO & VOICE SYNTHESIS CONTROL
+       1. WEB AUDIO & VOICEVOX SYNTHESIS CONTROL (改修箇所)
        ========================================================================== */
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -494,79 +496,129 @@
       } catch (e) {}
     }
 
-    function initVoiceList() {
-      if (!('speechSynthesis' in window)) return;
-      const updateVoices = () => {
-        appState.availableVoices = window.speechSynthesis.getVoices();
-        const select = document.getElementById('voice-select');
+    // VOICEVOXのスピーカー（話者）一覧を取得してセレクトボックスを構築
+    async function initVoiceList() {
+      const select = document.getElementById('voice-select');
+      try {
+        const response = await fetch(`${appState.voicevoxUrl}/speakers`);
+        if (!response.ok) throw new Error('VOICEVOX未起動');
+        
+        const speakers = await response.json();
+        appState.availableSpeakers = [];
         select.innerHTML = '';
-        
-        appState.availableVoices.forEach((voice, idx) => {
-          const option = document.createElement('option');
-          option.value = idx;
-          option.innerText = `${voice.name} (${voice.lang})`;
-          if (voice.default || voice.lang.includes('ja')) option.selected = true;
-          select.appendChild(option);
-        });
-        
-        if (select.selectedIndex !== -1) {
-          appState.selectedVoiceIndex = select.selectedIndex;
-        }
-      };
 
-      updateVoices();
-      if (window.speechSynthesis.onvoiceschanged !== undefined) {
-        window.speechSynthesis.onvoiceschanged = updateVoices;
+        speakers.forEach(speaker => {
+          speaker.styles.forEach(style => {
+            const speakerObj = {
+              id: style.id,
+              name: `${speaker.name} (${style.name})`
+            };
+            appState.availableSpeakers.push(speakerObj);
+
+            const option = document.createElement('option');
+            option.value = style.id;
+            option.innerText = speakerObj.name;
+            select.appendChild(option);
+          });
+        });
+
+        if (appState.availableSpeakers.length > 0) {
+          select.value = appState.selectedSpeakerId;
+          if (!select.value) {
+            appState.selectedSpeakerId = appState.availableSpeakers[0].id;
+            select.value = appState.selectedSpeakerId;
+          }
+        }
+      } catch (e) {
+        console.warn('VOICEVOX Engine 接続失敗:', e);
+        select.innerHTML = '<option value="3">VOICEVOX未接続</option>';
       }
     }
 
-    function changeVoice(index = null) {
+    function changeVoice(speakerId = null) {
       const select = document.getElementById('voice-select');
-      if (index !== null) {
-        select.selectedIndex = index % appState.availableVoices.length;
+      if (speakerId !== null) {
+        select.value = speakerId;
       }
-      appState.selectedVoiceIndex = select.selectedIndex;
-      const voice = appState.availableVoices[appState.selectedVoiceIndex];
-      showToast(`声の設定を変更: ${voice ? voice.name : '標準'}`);
+      appState.selectedSpeakerId = parseInt(select.value) || 3;
+      const selectedOption = select.options[select.selectedIndex];
+      const speakerName = selectedOption ? selectedOption.innerText : '話者ID: ' + appState.selectedSpeakerId;
+      showToast(`声の設定を変更: ${speakerName}`);
       speakText("声の設定を変更いたしました、サー。");
     }
 
     function cycleNextVoice() {
-      if (appState.availableVoices.length === 0) return;
-      const nextIdx = (appState.selectedVoiceIndex + 1) % appState.availableVoices.length;
-      changeVoice(nextIdx);
+      if (appState.availableSpeakers.length === 0) return;
+      const currentIdx = appState.availableSpeakers.findIndex(s => s.id === appState.selectedSpeakerId);
+      const nextIdx = (currentIdx + 1) % appState.availableSpeakers.length;
+      const nextSpeaker = appState.availableSpeakers[nextIdx];
+      if (nextSpeaker) {
+        changeVoice(nextSpeaker.id);
+      }
     }
 
-    function speakText(text, forcedLang = null) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-
-      const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/https?:\/\/\S+/g, '');
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-
-      if (appState.availableVoices[appState.selectedVoiceIndex]) {
-        utterance.voice = appState.availableVoices[appState.selectedVoiceIndex];
+    // VOICEVOX Engineを利用して音声合成・再生を行う関数
+    async function speakText(text, forcedLang = null) {
+      // 進行中の再生があれば停止
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
       }
 
-      if (forcedLang) utterance.lang = forcedLang;
+      const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/https?:\/\/\S+/g, '').trim();
+      if (!cleanText) return;
 
-      utterance.pitch = appState.visualMode === 'battle' ? 0.8 : 0.95;
-      utterance.rate = 1.05;
-
-      utterance.onstart = () => {
+      try {
         appState.isSpeaking = true;
         document.getElementById('core-state-label').innerText = 'SPEAKING';
-      };
 
-      utterance.onend = () => {
+        // 1. クエリ作成
+        const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, {
+          method: 'POST'
+        });
+        if (!queryRes.ok) throw new Error('Queryエラー');
+        const queryData = await queryRes.json();
+
+        // モードによるピッチ等の微調整
+        if (appState.visualMode === 'battle') {
+          queryData.pitchScale = -0.05;
+          queryData.speedScale = 1.1;
+        }
+
+        // 2. 音声波形（WAV）合成
+        const synthRes = await fetch(`${appState.voicevoxUrl}/synthesis?speaker=${appState.selectedSpeakerId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(queryData)
+        });
+        if (!synthRes.ok) throw new Error('Synthesisエラー');
+
+        const audioBlob = await synthRes.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        currentAudio = new Audio(audioUrl);
+
+        currentAudio.onended = () => {
+          appState.isSpeaking = false;
+          document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
+          if (appState.autoListen) {
+            setTimeout(() => startVoiceRecognition(), 300);
+          }
+        };
+
+        currentAudio.onerror = () => {
+          appState.isSpeaking = false;
+          document.getElementById('core-state-label').innerText = 'READY';
+        };
+
+        await currentAudio.play();
+
+      } catch (err) {
+        console.error('VOICEVOX Synthesis Error:', err);
+        showToast('VOICEVOX音声の生成に失敗しました（Engineが起動していない可能性があります）', 'error');
         appState.isSpeaking = false;
         document.getElementById('core-state-label').innerText = 'READY';
-        if (appState.autoListen) {
-          setTimeout(() => startVoiceRecognition(), 300);
-        }
-      };
-
-      window.speechSynthesis.speak(utterance);
+      }
     }
 
     /* ==========================================================================
