@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v5.0 (Gemini Powered)</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.0 (Gemini 3.0 Powered)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -210,7 +210,7 @@
         <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
       <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
-        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">GEMINI 2.5 AI</span>
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">GEMINI 3.0 AI</span>
       </h1>
     </div>
 
@@ -367,7 +367,7 @@
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            サー、Gemini AIエンジンが正常にリンクされました。「翻訳モード」「声を変えて」「〇〇を検索」「〇〇の画像」などの音声コマンドに常時対応いたします。
+            サー、Gemini 3.0 AIエンジンが正常にリンクされました。「翻訳モード」「声を変えて」「〇〇を検索」「〇〇の画像」などの音声コマンドに常時対応いたします。
           </p>
         </div>
       </div>
@@ -427,7 +427,7 @@
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. GEMINI INTEGRATED SYSTEM V5.0
+       J.A.R.V.I.S. GEMINI INTEGRATED SYSTEM V6.0 (Gemini 3.0 Updated)
        ========================================================================== */
 
     const appState = {
@@ -592,7 +592,7 @@
         showToast('🌐 リアルタイム双方向翻訳モード起動');
         speakText('リアルタイム翻訳モードを起動しました。外国語での会話を即座に日本語に通訳いたします。');
       } else {
-        tag.innerText = 'GEMINI 2.5 AI';
+        tag.innerText = 'GEMINI 3.0 AI';
         showToast('標準モード復帰');
         speakText('通常システムに復帰しました。');
       }
@@ -635,7 +635,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API & WEB/IMAGE SEARCH ENGINE
+       3. GEMINI API (v3.0) & WEB/IMAGE SEARCH ENGINE
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -653,14 +653,15 @@
       playJarvisChime();
     }
 
-    // Google Gemini API リクエスト実行関数
+    // Google Gemini API リクエスト実行関数 (gemini-3.0-flash へアップデート)
     async function callGeminiApi(promptText, base64Image = null, mimeType = null, useWebSearch = false) {
       if (!appState.apiKey) {
         openApiKeyModal();
         return "サー、Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。";
       }
 
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${appState.apiKey}`;
+      // エンドポイントのモデル名を gemini-3.0-flash に更新
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${appState.apiKey}`;
 
       let systemInstruction = "あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。丁寧でスマート、少しユーモアのあるトーンで回答してください。「サー」と呼びかけてください。";
       
@@ -722,7 +723,7 @@
       }
     }
 
-    // Web画像検索処理 (DuckDuckGo / Unsplash等のプレースホルダー & URL生成)
+    // Web画像検索処理
     function handleImageSearchRequest(query) {
       const cleanQuery = query.replace(/(画像|写真|を探して|検索して|見せて)/g, '').trim();
       const imageUrl = `https://source.unsplash.com/featured/?${encodeURIComponent(cleanQuery)}`;
@@ -959,7 +960,7 @@
         return;
       }
 
-      // WEB検索フラグ判定 (「検索」「ニュース」「最新」「天気」等のキーワードが含まれる場合)
+      // WEB検索フラグ判定
       const isSearchQuery = /(検索|最新|ニュース|天気|教えて|調べ|誰|何|いつ|どこ)/i.test(query);
 
       // GEMINI AI 呼び出し
@@ -973,7 +974,7 @@
       );
 
       triggerLaserScan(false);
-      appendChatMessage('J.A.R.V.I.S. (GEMINI)', aiResponse);
+      appendChatMessage('J.A.R.V.I.S. (GEMINI 3.0)', aiResponse);
       speakText(aiResponse);
       playJarvisChime();
     }
@@ -1053,7 +1054,7 @@
 
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = "サー、Gemini AIエンジンが準備完了しております。ご指示をどうぞ。";
+      const greeting = "サー、Gemini 3.0 AIエンジンが準備完了しております。ご指示をどうぞ。";
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
@@ -1088,7 +1089,7 @@
       if (!appState.apiKey) {
         setTimeout(() => openApiKeyModal(), 1000);
       } else {
-        showToast('Gemini API 接続OK');
+        showToast('Gemini 3.0 API 接続OK');
       }
 
       setTimeout(() => startVoiceRecognition(), 800);
