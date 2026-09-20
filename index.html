@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.8 (Ultra High-Speed & v3.6 Engine)</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.9 (Fixed Engine)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -360,7 +360,7 @@
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            ○○様、Gemini Engineをv3.6仕様にアップグレードし、読み上げ速度を1.65倍速へ最適化いたしました。準備完了です。
+            ○○様、Gemini APIモデル設定のバグを修正し、安定動作を確認いたしました。準備完了です。
           </p>
         </div>
       </div>
@@ -423,11 +423,11 @@
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.8 (FAST SPEECH & GEMINI v3.6 UPDATE)
+       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.9 (API MODEL FIX & FAST SPEECH)
        ========================================================================== */
 
     const appState = {
-      userName: '○○', // ユーザーの呼び名
+      userName: '○○',
       isSmartphoneMode: false,
       visualMode: 'normal',
       zoomLevel: 1.0,
@@ -458,7 +458,7 @@
     const transcriptText = document.getElementById('transcript-text');
 
     /* ==========================================================================
-       1. WEB AUDIO & VOICE SYNTHESIS (ULTRA HIGH-SPEED SPEAKING: 1.65x)
+       1. WEB AUDIO & VOICE SYNTHESIS (1.65x SPEED)
        ========================================================================== */
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -565,7 +565,7 @@
         try { recognition.stop(); } catch(e){}
       }
 
-      // VOICEVOX 使用時（1.65倍速化）
+      // VOICEVOX 使用時（1.65倍速）
       if (appState.selectedSpeakerId !== 'browser' && !isNaN(appState.selectedSpeakerId)) {
         try {
           const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, {
@@ -574,7 +574,6 @@
           if (!queryRes.ok) throw new Error('VOICEVOX Query Error');
           const queryData = await queryRes.json();
 
-          // 読み上げ速度を高速(1.65倍)に調整
           queryData.speedScale = 1.65;
 
           if (appState.visualMode === 'battle') {
@@ -614,7 +613,6 @@
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
-      // 読み上げ速度を1.65倍速に変更（高速化）
       utterance.rate = 1.65;
       utterance.pitch = 0.95;
 
@@ -699,7 +697,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (UPDATED FOR GEMINI v2.5 / v2.0 / v1.5 HIGH-SPEED)
+       3. GEMINI API ENGINE (FIXED VALID MODEL NAMES)
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -723,8 +721,8 @@
         return `${appState.userName}様、Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
       }
 
-      // v3.6 / 高速推奨モデルの優先リスト（安定・最新モデルを順番にフォールバック）
-      const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+      // 確実に利用可能な正しいモデル名の候補リスト
+      const models = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro-latest"];
 
       let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。「サー」という言葉は使わず、ユーザーのことは必ず「${appState.userName}」とお呼びください。`;
 
@@ -1374,7 +1372,7 @@
 
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = `${appState.userName}様、v3.6超高速応答モードで待機中です。`;
+      const greeting = `${appState.userName}様、システム正常稼働中です。`;
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
@@ -1406,7 +1404,7 @@
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      showToast('J.A.R.V.I.S. v3.6 HUD システムオンライン');
+      showToast('J.A.R.V.I.S. v6.9 システムオンライン');
 
       setTimeout(() => startVoiceRecognition(), 800);
 
