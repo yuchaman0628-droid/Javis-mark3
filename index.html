@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.0 (Gemini 3.0 Powered)</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.0 (Gemini Powered)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -41,7 +41,7 @@
     :root {
       --theme-color: #00f0ff;
       --theme-glow: rgba(0, 240, 255, 0.4);
-      --hud-bg: rgba(4, 18, 38, 0.18); /* 超高透過仕様 */
+      --hud-bg: rgba(4, 18, 38, 0.18);
       --hud-border: rgba(0, 240, 255, 0.3);
     }
 
@@ -99,7 +99,7 @@
     .text-glow { text-shadow: 0 0 8px var(--theme-glow); }
     .border-theme { border-color: var(--hud-border); }
 
-    /* HUD パネル (超高透過仕様) */
+    /* HUD パネル */
     .hud-panel {
       position: relative;
       background: var(--hud-bg);
@@ -162,7 +162,7 @@
     /* スマホモード用レイアウト */
     body.smartphone-mode {
       font-size: 10px;
-      --hud-bg: rgba(2, 10, 22, 0.10); /* 超高透過 10% */
+      --hud-bg: rgba(2, 10, 22, 0.10);
     }
     body.smartphone-mode header { padding: 2px 8px !important; }
     body.smartphone-mode main { padding: 2px 4px !important; }
@@ -210,7 +210,7 @@
         <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
       <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
-        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">GEMINI 3.0 AI</span>
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">GEMINI AI</span>
       </h1>
     </div>
 
@@ -350,7 +350,7 @@
 
     </div>
 
-    <!-- 対話ログ表示領域 (超高透過) -->
+    <!-- 対話ログ表示領域 -->
     <div id="response-box-container" class="w-full max-w-4xl mx-auto hud-panel p-2 rounded-lg my-1 flex flex-col">
       <div class="flex items-center justify-between pb-0.5 border-b border-theme/30 mb-1">
         <div class="flex items-center space-x-1">
@@ -367,7 +367,7 @@
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            サー、Gemini 3.0 AIエンジンが正常にリンクされました。「翻訳モード」「声を変えて」「〇〇を検索」「〇〇の画像」などの音声コマンドに常時対応いたします。
+            サー、Gemini AIエンジンが正常にリンクされました。「翻訳モード」「声を変えて」「〇〇を検索」「〇〇の画像」などの音声コマンドに常時対応いたします。
           </p>
         </div>
       </div>
@@ -379,7 +379,7 @@
       </div>
     </div>
 
-    <!-- コンソール・送信バー (透過度15%) -->
+    <!-- コンソール・送信バー -->
     <div class="console-bar w-full max-w-4xl mx-auto bg-[#020712]/15 backdrop-blur-md border border-theme p-1 rounded-xl flex items-center space-x-1">
       
       <button type="button" id="mic-btn" onclick="toggleVoiceRecognition()" title="Voice Control" class="p-1.5 rounded-lg border border-theme bg-jarvis-cyan/20 text-white transition flex-shrink-0 text-xs font-bold">
@@ -413,9 +413,9 @@
         🔑 GEMINI API KEY CONFIGURATION
       </h2>
       <p class="text-[10px] text-gray-300">
-        Google Gemini AIによるリアルタイム会話・WEB検索・画像解析機能を使用するにはAPIキーが必要です。
+        Google Gemini AIによるリアルタイム会話・WEB検索・画像解析機能を使用するためのAPIキーです。
       </p>
-      <input type="password" id="gemini-api-key-input" placeholder="AIzaSy..." class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
+      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力" class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
       <div class="flex justify-end space-x-2 text-xs">
         <button onclick="closeApiKeyModal()" class="px-3 py-1 rounded bg-white/10 hover:bg-white/20">キャンセル</button>
         <button onclick="saveApiKey()" class="px-3 py-1 rounded bg-jarvis-gold/20 border border-jarvis-gold text-jarvis-gold font-bold hover:bg-jarvis-gold/40">保存</button>
@@ -427,12 +427,12 @@
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. GEMINI INTEGRATED SYSTEM V6.0 (Gemini 3.0 Updated)
+       J.A.R.V.I.S. GEMINI INTEGRATED SYSTEM V6.0
        ========================================================================== */
 
     const appState = {
       isSmartphoneMode: false,
-      visualMode: 'normal', // 'normal', 'translate', 'battle', 'thermal'
+      visualMode: 'normal',
       zoomLevel: 1.0,
       autoListen: true,
       cameraActive: false,
@@ -440,7 +440,8 @@
       isSpeaking: false,
       selectedVoiceIndex: 0,
       availableVoices: [],
-      apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || '',
+      // ご提示いただいたAPIキーを初期値としてセット済みです
+      apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || 'AQ.Ab8RN6JiOfdrLflMuTk0xsPuXT189ROg4umdy5qXDmgZptMXaw',
       currentImage: { base64: null, mimeType: null, dataUrl: null, source: null }
     };
 
@@ -490,7 +491,6 @@
       } catch (e) {}
     }
 
-    // 音声読み上げ用 ボイス一覧の初期化・変更
     function initVoiceList() {
       if (!('speechSynthesis' in window)) return;
       const updateVoices = () => {
@@ -541,7 +541,6 @@
       const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/https?:\/\/\S+/g, '');
       const utterance = new SpeechSynthesisUtterance(cleanText);
 
-      // 選択されたボイスをセット
       if (appState.availableVoices[appState.selectedVoiceIndex]) {
         utterance.voice = appState.availableVoices[appState.selectedVoiceIndex];
       }
@@ -592,7 +591,7 @@
         showToast('🌐 リアルタイム双方向翻訳モード起動');
         speakText('リアルタイム翻訳モードを起動しました。外国語での会話を即座に日本語に通訳いたします。');
       } else {
-        tag.innerText = 'GEMINI 3.0 AI';
+        tag.innerText = 'GEMINI AI';
         showToast('標準モード復帰');
         speakText('通常システムに復帰しました。');
       }
@@ -635,7 +634,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API (v3.0) & WEB/IMAGE SEARCH ENGINE
+       3. GEMINI API & ENGINE
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -653,15 +652,14 @@
       playJarvisChime();
     }
 
-    // Google Gemini API リクエスト実行関数 (gemini-3.0-flash へアップデート)
-    async function callGeminiApi(promptText, base64Image = null, mimeType = null, useWebSearch = false) {
+    async function callGeminiApi(promptText, base64Image = null, mimeType = null) {
       if (!appState.apiKey) {
         openApiKeyModal();
         return "サー、Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。";
       }
 
-      // エンドポイントのモデル名を gemini-3.0-flash に更新
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${appState.apiKey}`;
+      // 標準の gemini-1.5-flash エンドポイント
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appState.apiKey}`;
 
       let systemInstruction = "あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。丁寧でスマート、少しユーモアのあるトーンで回答してください。「サー」と呼びかけてください。";
       
@@ -684,11 +682,6 @@
         systemInstruction: { parts: [{ text: systemInstruction }] }
       };
 
-      // WEB検索（Google Search Grounding）を有効化
-      if (useWebSearch) {
-        requestBody.tools = [{ googleSearch: {} }];
-      }
-
       try {
         const response = await fetch(endpoint, {
           method: "POST",
@@ -705,16 +698,6 @@
         const candidate = data.candidates?.[0];
         let textResult = candidate?.content?.parts?.[0]?.text || "応答を取得できませんでした。";
 
-        // Web検索グラウンディングソースが存在する場合
-        if (candidate?.groundingMetadata?.groundingChunks) {
-          const sources = candidate.groundingMetadata.groundingChunks
-            .map(c => c.web?.title ? `<a href="${c.web.uri}" target="_blank" class="underline text-jarvis-cyan">${c.web.title}</a>` : null)
-            .filter(Boolean);
-          if (sources.length > 0) {
-            textResult += `\n\n<span class="text-[8px] text-gray-400">🔍 参照ソース: ${sources.join(' | ')}</span>`;
-          }
-        }
-
         return textResult;
 
       } catch (err) {
@@ -723,7 +706,6 @@
       }
     }
 
-    // Web画像検索処理
     function handleImageSearchRequest(query) {
       const cleanQuery = query.replace(/(画像|写真|を探して|検索して|見せて)/g, '').trim();
       const imageUrl = `https://source.unsplash.com/featured/?${encodeURIComponent(cleanQuery)}`;
@@ -845,7 +827,7 @@
     }
 
     /* ==========================================================================
-       5. SPEECH RECOGNITION (音声常時認識)
+       5. SPEECH RECOGNITION (音声認識)
        ========================================================================== */
     let recognition = null;
 
@@ -926,7 +908,6 @@
 
       appendChatMessage('USER', query || '[ビジュアル解析実行]', false, hasImg ? appState.currentImage.dataUrl : null);
 
-      // コマンド判定 (ローカルシステム操作)
       const qLower = query.toLowerCase();
 
       // 声の変更コマンド
@@ -960,21 +941,17 @@
         return;
       }
 
-      // WEB検索フラグ判定
-      const isSearchQuery = /(検索|最新|ニュース|天気|教えて|調べ|誰|何|いつ|どこ)/i.test(query);
-
       // GEMINI AI 呼び出し
       document.getElementById('core-state-label').innerText = 'THINKING';
       
       const aiResponse = await callGeminiApi(
         query || "この画像を解説してください。", 
         appState.currentImage.base64, 
-        appState.currentImage.mimeType, 
-        isSearchQuery
+        appState.currentImage.mimeType
       );
 
       triggerLaserScan(false);
-      appendChatMessage('J.A.R.V.I.S. (GEMINI 3.0)', aiResponse);
+      appendChatMessage('J.A.R.V.I.S. (GEMINI)', aiResponse);
       speakText(aiResponse);
       playJarvisChime();
     }
@@ -1054,7 +1031,7 @@
 
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = "サー、Gemini 3.0 AIエンジンが準備完了しております。ご指示をどうぞ。";
+      const greeting = "サー、Gemini AIエンジンが準備完了しております。ご指示をどうぞ。";
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
@@ -1086,11 +1063,7 @@
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      if (!appState.apiKey) {
-        setTimeout(() => openApiKeyModal(), 1000);
-      } else {
-        showToast('Gemini 3.0 API 接続OK');
-      }
+      showToast('Gemini API 接続完了');
 
       setTimeout(() => startVoiceRecognition(), 800);
     };
