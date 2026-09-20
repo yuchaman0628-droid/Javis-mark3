@@ -252,8 +252,8 @@
         addMessage('USER', text, 'user');
         userInput.value = '';
 
-        // 修正ポイント：最新推奨モデル endpoint (gemini-2.5-flash) を使用
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        // 修正ポイント：モデル指定を gemini-3.6-flash に変更
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
         try {
             const response = await fetch(url, {
