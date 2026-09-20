@@ -423,11 +423,11 @@
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.7
+       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.7 (FIXED)
        ========================================================================== */
 
     const appState = {
-      userName: '○○', // ユーザーの呼び名（ここを変更すると呼称が変わります）
+      userName: '○○', // ユーザーの呼び名
       isSmartphoneMode: false,
       visualMode: 'normal',
       zoomLevel: 1.0,
@@ -565,7 +565,7 @@
         try { recognition.stop(); } catch(e){}
       }
 
-      // VOICEVOX 使用時（スピード1.3倍に調整）
+      // VOICEVOX 使用時
       if (appState.selectedSpeakerId !== 'browser' && !isNaN(appState.selectedSpeakerId)) {
         try {
           const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, {
@@ -574,7 +574,7 @@
           if (!queryRes.ok) throw new Error('VOICEVOX Query Error');
           const queryData = await queryRes.json();
 
-          queryData.speedScale = 1.3; // 早口に設定
+          queryData.speedScale = 1.3;
 
           if (appState.visualMode === 'battle') {
             queryData.pitchScale = -0.05;
@@ -605,7 +605,6 @@
       speakTextWebSpeech(cleanText);
     }
 
-    // ブラウザ標準の読み上げ（1.35倍速で高速化）
     function speakTextWebSpeech(text) {
       if (!('speechSynthesis' in window)) {
         finishSpeaking();
@@ -614,7 +613,7 @@
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
-      utterance.rate = 1.35; // 高速化（標準1.0 -> 1.35）
+      utterance.rate = 1.35;
       utterance.pitch = 0.95;
 
       utterance.onend = finishSpeaking;
@@ -698,7 +697,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (STABLE & FAST ENGINE)
+       3. GEMINI API ENGINE (STABLE & CORRECTED MODELS)
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -722,8 +721,8 @@
         return `${appState.userName}様、Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
       }
 
-      // 安定して動作する標準モデルリスト
-      const models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-8b"];
+      // 互換性と動作実績のある推奨モデルリスト
+      const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
       let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。「サー」という言葉は使わず、ユーザーのことは必ず「${appState.userName}」とお呼びください。`;
 
@@ -753,7 +752,7 @@
 
       let lastErrorMessage = "";
 
-      // 使えるモデルから順番に試行
+      // 定義されたモデルを順番に試行
       for (const model of models) {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
@@ -774,8 +773,9 @@
               message = errData.error?.message || message;
             } catch (_) {}
             
-            lastErrorMessage = message;
-            continue; // 次のモデルで再試行
+            lastErrorMessage = `[${model}] ${message}`;
+            console.warn(`Gemini Model fallback (${model}):`, message);
+            continue; // エラー時は次のモデルへ
           }
 
           const data = await response.json();
@@ -789,7 +789,7 @@
 
         } catch (err) {
           console.error(`Gemini API Error (${model}):`, err);
-          lastErrorMessage = err.message || "通信エラー";
+          lastErrorMessage = `[${model}] ${err.message || "通信エラー"}`;
         }
       }
 
