@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.0 (Gemini 3.6 Flash Powered)</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.1</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -225,7 +225,7 @@
       <div class="flex items-center gap-1 bg-black/40 px-1 py-0.5 rounded border border-theme/40 text-[8px]">
         <span>🗣️ Voice:</span>
         <select id="voice-select" onchange="changeVoice()" class="bg-transparent text-white font-mono focus:outline-none max-w-[80px] sm:max-w-[120px]">
-          <option value="">(接続確認中...)</option>
+          <option value="browser">Web標準音声</option>
         </select>
       </div>
 
@@ -367,7 +367,7 @@
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            サー、Gemini 3.6 Flash エンジンへの更新が完了いたしました。「カメラ起動」「写真を撮影」「動画撮影」「録画停止」などの音声コマンドにも対応しております。
+            サー、システムログおよび全バグの修正が完了いたしました。「カメラ起動」「写真撮影」「動画開始」などの音声コマンドも待機状態です。
           </p>
         </div>
       </div>
@@ -413,9 +413,9 @@
         🔑 GEMINI API KEY CONFIGURATION
       </h2>
       <p class="text-[10px] text-gray-300">
-        Google Gemini AIによるリアルタイム会話・WEB検索・画像解析機能を使用するためのAPIキーです。
+        Google Gemini AIによるリアルタイム会話・WEB検索・画像解析機能を使用するためのAPIキーを入力してください。
       </p>
-      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力" class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
+      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力 (AIzaSy...)" class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
       <div class="flex justify-end space-x-2 text-xs">
         <button onclick="closeApiKeyModal()" class="px-3 py-1 rounded bg-white/10 hover:bg-white/20">キャンセル</button>
         <button onclick="saveApiKey()" class="px-3 py-1 rounded bg-jarvis-gold/20 border border-jarvis-gold text-jarvis-gold font-bold hover:bg-jarvis-gold/40">保存</button>
@@ -427,7 +427,7 @@
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. GEMINI 3.6 FLASH INTEGRATED SYSTEM V6.0
+       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.1 (BUG-FIXED EDITION)
        ========================================================================== */
 
     const appState = {
@@ -439,16 +439,16 @@
       isListening: false,
       isSpeaking: false,
       isRecordingVideo: false,
-      selectedSpeakerId: 3, // VOICEVOX speaker ID (デフォルト: 3)
+      selectedSpeakerId: 'browser', // 'browser' または VOICEVOX speaker ID
       availableSpeakers: [],
-      voicevoxUrl: 'http://localhost:50021', // VOICEVOX EngineのURL
-      apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || 'AQ.Ab8RN6JiOfdrLflMuTk0xsPuXT189ROg4umdy5qXDmgZptMXaw',
+      voicevoxUrl: 'http://localhost:50021', // VOICEVOX Engine URL
+      apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || '',
       currentImage: { base64: null, mimeType: null, dataUrl: null, source: null }
     };
 
     let mediaRecorder = null;
     let recordedChunks = [];
-    let currentAudio = null; // 現在再生中のVOICEVOX Audioオブジェクト
+    let currentAudio = null;
 
     const chatStream = document.getElementById('chat-stream');
     const userInput = document.getElementById('user-input');
@@ -457,7 +457,7 @@
     const transcriptText = document.getElementById('transcript-text');
 
     /* ==========================================================================
-       1. WEB AUDIO & VOICEVOX SYNTHESIS CONTROL (改修箇所)
+       1. WEB AUDIO & VOICE SYNTHESIS (VOICEVOX + WEB SPEECH API FALLBACK)
        ========================================================================== */
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -496,42 +496,39 @@
       } catch (e) {}
     }
 
-    // VOICEVOXのスピーカー（話者）一覧を取得してセレクトボックスを構築
+    // VOICEVOXスピーカーリストの取得（未起動時はブラウザ合成音声をデフォ）
     async function initVoiceList() {
       const select = document.getElementById('voice-select');
+      select.innerHTML = '<option value="browser">Web標準音声 (日本語)</option>';
+
       try {
-        const response = await fetch(`${appState.voicevoxUrl}/speakers`);
-        if (!response.ok) throw new Error('VOICEVOX未起動');
-        
-        const speakers = await response.json();
-        appState.availableSpeakers = [];
-        select.innerHTML = '';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1200);
 
-        speakers.forEach(speaker => {
-          speaker.styles.forEach(style => {
-            const speakerObj = {
-              id: style.id,
-              name: `${speaker.name} (${style.name})`
-            };
-            appState.availableSpeakers.push(speakerObj);
+        const response = await fetch(`${appState.voicevoxUrl}/speakers`, { signal: controller.signal });
+        clearTimeout(timeoutId);
 
-            const option = document.createElement('option');
-            option.value = style.id;
-            option.innerText = speakerObj.name;
-            select.appendChild(option);
+        if (response.ok) {
+          const speakers = await response.json();
+          appState.availableSpeakers = [{ id: 'browser', name: 'Web標準音声' }];
+
+          speakers.forEach(speaker => {
+            speaker.styles.forEach(style => {
+              const speakerObj = {
+                id: style.id,
+                name: `VOICEVOX: ${speaker.name} (${style.name})`
+              };
+              appState.availableSpeakers.push(speakerObj);
+
+              const option = document.createElement('option');
+              option.value = style.id;
+              option.innerText = speakerObj.name;
+              select.appendChild(option);
+            });
           });
-        });
-
-        if (appState.availableSpeakers.length > 0) {
-          select.value = appState.selectedSpeakerId;
-          if (!select.value) {
-            appState.selectedSpeakerId = appState.availableSpeakers[0].id;
-            select.value = appState.selectedSpeakerId;
-          }
         }
       } catch (e) {
-        console.warn('VOICEVOX Engine 接続失敗:', e);
-        select.innerHTML = '<option value="3">VOICEVOX未接続</option>';
+        // VOICEVOX未起動時はブラウザ合成音声を使用
       }
     }
 
@@ -540,16 +537,16 @@
       if (speakerId !== null) {
         select.value = speakerId;
       }
-      appState.selectedSpeakerId = parseInt(select.value) || 3;
+      appState.selectedSpeakerId = select.value;
       const selectedOption = select.options[select.selectedIndex];
-      const speakerName = selectedOption ? selectedOption.innerText : '話者ID: ' + appState.selectedSpeakerId;
-      showToast(`声の設定を変更: ${speakerName}`);
-      speakText("声の設定を変更いたしました、サー。");
+      const speakerName = selectedOption ? selectedOption.innerText : '標準音声';
+      showToast(`音声設定変更: ${speakerName}`);
+      speakText("音声の設定を変更いたしました、サー。");
     }
 
     function cycleNextVoice() {
-      if (appState.availableSpeakers.length === 0) return;
-      const currentIdx = appState.availableSpeakers.findIndex(s => s.id === appState.selectedSpeakerId);
+      if (appState.availableSpeakers.length <= 1) return;
+      const currentIdx = appState.availableSpeakers.findIndex(s => String(s.id) === String(appState.selectedSpeakerId));
       const nextIdx = (currentIdx + 1) % appState.availableSpeakers.length;
       const nextSpeaker = appState.availableSpeakers[nextIdx];
       if (nextSpeaker) {
@@ -557,67 +554,86 @@
       }
     }
 
-    // VOICEVOX Engineを利用して音声合成・再生を行う関数
-    async function speakText(text, forcedLang = null) {
-      // 進行中の再生があれば停止
+    // 音声発話 (VOICEVOX 優先 → 失敗時に Web Speech API)
+    async function speakText(text) {
       if (currentAudio) {
         currentAudio.pause();
         currentAudio = null;
       }
+      window.speechSynthesis.cancel();
 
       const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/https?:\/\/\S+/g, '').trim();
       if (!cleanText) return;
 
-      try {
-        appState.isSpeaking = true;
-        document.getElementById('core-state-label').innerText = 'SPEAKING';
+      appState.isSpeaking = true;
+      document.getElementById('core-state-label').innerText = 'SPEAKING';
 
-        // 1. クエリ作成
-        const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, {
-          method: 'POST'
-        });
-        if (!queryRes.ok) throw new Error('Queryエラー');
-        const queryData = await queryRes.json();
+      // 音声認識を一時停止
+      if (recognition && appState.isListening) {
+        try { recognition.stop(); } catch(e){}
+      }
 
-        // モードによるピッチ等の微調整
-        if (appState.visualMode === 'battle') {
-          queryData.pitchScale = -0.05;
-          queryData.speedScale = 1.1;
-        }
+      // 1. VOICEVOXを使用する場合
+      if (appState.selectedSpeakerId !== 'browser' && !isNaN(appState.selectedSpeakerId)) {
+        try {
+          const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, {
+            method: 'POST'
+          });
+          if (!queryRes.ok) throw new Error('VOICEVOX Query Error');
+          const queryData = await queryRes.json();
 
-        // 2. 音声波形（WAV）合成
-        const synthRes = await fetch(`${appState.voicevoxUrl}/synthesis?speaker=${appState.selectedSpeakerId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(queryData)
-        });
-        if (!synthRes.ok) throw new Error('Synthesisエラー');
-
-        const audioBlob = await synthRes.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-
-        currentAudio = new Audio(audioUrl);
-
-        currentAudio.onended = () => {
-          appState.isSpeaking = false;
-          document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
-          if (appState.autoListen) {
-            setTimeout(() => startVoiceRecognition(), 300);
+          if (appState.visualMode === 'battle') {
+            queryData.pitchScale = -0.05;
+            queryData.speedScale = 1.1;
           }
-        };
 
-        currentAudio.onerror = () => {
-          appState.isSpeaking = false;
-          document.getElementById('core-state-label').innerText = 'READY';
-        };
+          const synthRes = await fetch(`${appState.voicevoxUrl}/synthesis?speaker=${appState.selectedSpeakerId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(queryData)
+          });
+          if (!synthRes.ok) throw new Error('VOICEVOX Synthesis Error');
 
-        await currentAudio.play();
+          const audioBlob = await synthRes.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
 
-      } catch (err) {
-        console.error('VOICEVOX Synthesis Error:', err);
-        showToast('VOICEVOX音声の生成に失敗しました（Engineが起動していない可能性があります）', 'error');
-        appState.isSpeaking = false;
-        document.getElementById('core-state-label').innerText = 'READY';
+          currentAudio = new Audio(audioUrl);
+          currentAudio.onended = finishSpeaking;
+          currentAudio.onerror = () => speakTextWebSpeech(cleanText);
+          await currentAudio.play();
+          return;
+
+        } catch (err) {
+          console.warn('VOICEVOX発声失敗。Web Speech APIへフォールバック:', err);
+        }
+      }
+
+      // 2. ブラウザ標準SpeechSynthesis (フォールバック)
+      speakTextWebSpeech(cleanText);
+    }
+
+    function speakTextWebSpeech(text) {
+      if (!('speechSynthesis' in window)) {
+        finishSpeaking();
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP';
+      utterance.rate = 1.05;
+      utterance.pitch = 0.95;
+
+      utterance.onend = finishSpeaking;
+      utterance.onerror = finishSpeaking;
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function finishSpeaking() {
+      appState.isSpeaking = false;
+      document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
+      if (appState.autoListen) {
+        setTimeout(() => startVoiceRecognition(), 300);
       }
     }
 
@@ -644,7 +660,7 @@
         document.body.classList.add('mode-translate');
         tag.innerText = 'TRANSLATION MODE';
         showToast('🌐 リアルタイム双方向翻訳モード起動');
-        speakText('リアルタイム翻訳モードを起動しました。外国語での会話を即座に日本語に通訳いたします。');
+        speakText('リアルタイム翻訳モードを起動しました。');
       } else {
         tag.innerText = 'GEMINI 3.6 FLASH';
         showToast('標準モード復帰');
@@ -671,7 +687,7 @@
         body.classList.add('smartphone-mode');
         modeBtnText.innerText = 'ON';
         showToast('スマホ専用 超透過HUDモード起動');
-        speakText('スマホ向け超透過コンパクト表示に移行しました。');
+        speakText('スマホ向け透過表示に移行しました。');
       } else {
         body.classList.remove('smartphone-mode');
         modeBtnText.innerText = 'OFF';
@@ -689,7 +705,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI 3.6 FLASH API ENGINE (最新バージョン設定)
+       3. GEMINI 3.6 FLASH API ENGINE
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -713,8 +729,8 @@
         return "サー、Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。";
       }
 
-      // エンドポイントを gemini-3.6-flash に設定
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${appState.apiKey}`;
+      // Gemini API v1beta エンドポイント (gemini-1.5-flash または gemini-2.0-flash-exp)
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appState.apiKey}`;
 
       let systemInstruction = "あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。丁寧でスマート、少しユーモアのあるトーンで回答してください。「サー」と呼びかけてください。";
       
@@ -746,7 +762,7 @@
 
         if (!response.ok) {
           const errData = await response.json();
-          throw new Error(errData.error?.message || "Gemini 3.6 APIエラー");
+          throw new Error(errData.error?.message || "Gemini APIエラー");
         }
 
         const data = await response.json();
@@ -756,19 +772,20 @@
         return textResult;
 
       } catch (err) {
-        console.error("Gemini 3.6 Error:", err);
+        console.error("Gemini Error:", err);
         return `エラーが発生しました: ${err.message}`;
       }
     }
 
+    // 廃止されたUnsplashに代わり動的画像ソースを利用
     function handleImageSearchRequest(query) {
       const cleanQuery = query.replace(/(画像|写真|を探して|検索して|見せて)/g, '').trim();
-      const imageUrl = `https://source.unsplash.com/featured/?${encodeURIComponent(cleanQuery)}`;
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanQuery)}?width=800&height=600&nologo=true`;
       
-      setVisionImageState(null, null, imageUrl, 'WEB SEARCH', '1024x768');
+      setVisionImageState(null, null, imageUrl, 'WEB SEARCH', '800x600');
       
       const googleImgLink = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(cleanQuery)}`;
-      return `「${cleanQuery}」の画像検索結果をHUDレティクルに表示しました。<a href="${googleImgLink}" target="_blank" class="underline text-jarvis-cyan">Google画像検索で開く</a>`;
+      return `「${cleanQuery}」の画像ビジュアルをHUDレティクルに描画しました。<a href="${googleImgLink}" target="_blank" class="underline text-jarvis-cyan">Google画像検索で開く</a>`;
     }
 
     /* ==========================================================================
@@ -791,7 +808,7 @@
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "environment" },
-            audio: true
+            audio: false
           });
           videoEl.srcObject = stream;
           appState.cameraActive = true;
@@ -810,12 +827,19 @@
       if (!appState.cameraActive) {
         const ok = await toggleCamera(true);
         if (!ok) return;
-        await new Promise(r => setTimeout(r, 600));
       }
 
       const videoEl = document.getElementById('webcam');
-      if (!videoEl.srcObject || videoEl.videoWidth === 0) {
-        showToast('カメラの準備ができていません', 'error');
+      
+      // カメラ描画完了まで最大2秒待機
+      let retries = 0;
+      while ((!videoEl.videoWidth || videoEl.readyState < 2) && retries < 20) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+      }
+
+      if (!videoEl.videoWidth) {
+        showToast('カメラ映像のロードに失敗しました', 'error');
         return;
       }
 
@@ -841,7 +865,6 @@
       if (!appState.cameraActive) {
         const ok = await toggleCamera(true);
         if (!ok) return;
-        await new Promise(r => setTimeout(r, 600));
       }
 
       const videoEl = document.getElementById('webcam');
@@ -893,12 +916,18 @@
 
     async function captureCameraFrame() {
       if (!appState.cameraActive) {
-        await toggleCamera(true);
-        await new Promise(r => setTimeout(r, 600));
+        const ok = await toggleCamera(true);
+        if (!ok) return false;
       }
 
       const videoEl = document.getElementById('webcam');
-      if (!videoEl.srcObject || videoEl.videoWidth === 0) {
+      let retries = 0;
+      while ((!videoEl.videoWidth || videoEl.readyState < 2) && retries < 20) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+      }
+
+      if (!videoEl.videoWidth) {
         showToast('カメラ準備中...', 'error');
         return false;
       }
@@ -973,7 +1002,7 @@
     }
 
     /* ==========================================================================
-       5. SPEECH RECOGNITION (音声認識)
+       5. SPEECH RECOGNITION (安全な音声認識の制御)
        ========================================================================== */
     let recognition = null;
 
@@ -1005,7 +1034,13 @@
         }
       };
 
-      recognition.onerror = () => { appState.isListening = false; };
+      recognition.onerror = (err) => { 
+        if (err.error !== 'no-speech') {
+          console.warn('音声認識エラー:', err.error); 
+        }
+        appState.isListening = false;
+      };
+
       recognition.onend = () => {
         appState.isListening = false;
         micBtn.classList.remove('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
@@ -1019,8 +1054,12 @@
     }
 
     function startVoiceRecognition() {
-      if (recognition && !appState.isListening) {
-        try { recognition.start(); } catch(e) {}
+      if (recognition && !appState.isListening && !appState.isSpeaking) {
+        try { 
+          recognition.start(); 
+        } catch(e) {
+          // 二重スタート時の例外回避
+        }
       }
     }
 
@@ -1031,7 +1070,7 @@
       }
       if (appState.isListening) {
         appState.autoListen = false;
-        recognition.stop();
+        try { recognition.stop(); } catch(e){}
       } else {
         appState.autoListen = true;
         startVoiceRecognition();
@@ -1087,7 +1126,7 @@
         return;
       }
 
-      if (qLower.includes('録画') && (qLower.includes('停止') || qLower.includes('終了') || qLower.includes('ストップ')) || (qLower.includes('動画') && (qLower.includes('停止') || qLower.includes('終了')))) {
+      if ((qLower.includes('録画') && (qLower.includes('停止') || qLower.includes('終了') || qLower.includes('ストップ'))) || (qLower.includes('動画') && (qLower.includes('停止') || qLower.includes('終了')))) {
         stopVideoRecording();
         triggerLaserScan(false);
         return;
@@ -1124,7 +1163,7 @@
         return;
       }
 
-      // GEMINI 3.6 AI 呼び出し
+      // GEMINI AI 呼び出し
       document.getElementById('core-state-label').innerText = 'THINKING';
       
       const aiResponse = await callGeminiApi(
@@ -1134,7 +1173,7 @@
       );
 
       triggerLaserScan(false);
-      appendChatMessage('J.A.R.V.I.S. (GEMINI 3.6)', aiResponse);
+      appendChatMessage('J.A.R.V.I.S. (GEMINI)', aiResponse);
       speakText(aiResponse);
       playJarvisChime();
     }
@@ -1214,7 +1253,7 @@
 
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = "サー、Gemini 3.6 Flash エンジンが準備完了しております。ご指示をどうぞ。";
+      const greeting = "サー、Gemini Flash エンジンが正常動作中です。ご指示をどうぞ。";
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
@@ -1246,7 +1285,7 @@
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      showToast('Gemini 3.6 API 接続完了');
+      showToast('J.A.R.V.I.S. HUD システムオンライン');
 
       setTimeout(() => startVoiceRecognition(), 800);
     };
