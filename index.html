@@ -340,10 +340,10 @@
         <div class="quick-queries pt-1 border-t border-theme/20 text-[8px]">
           <span class="text-gray-400 block mb-0.5">音声操作・AIコマンド例:</span>
           <div class="grid grid-cols-2 gap-0.5 text-[8px]">
-            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「翻訳モード」</span>
-            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「〇〇について検索」</span>
-            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「声を変えて」</span>
-            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「〇〇の画像を探して」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「カメラ起動」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「写真を撮影」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「動画を撮影」</span>
+            <span class="p-0.5 bg-black/30 border border-white/10 rounded">「録画停止」</span>
           </div>
         </div>
       </div>
@@ -367,7 +367,7 @@
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            サー、Gemini 3.6 Flash エンジンへの更新が完了いたしました。「翻訳モード」「声を変えて」「〇〇を検索」「〇〇の画像」などの音声コマンドに常時対応いたします。
+            サー、Gemini 3.6 Flash エンジンへの更新が完了いたしました。「カメラ起動」「写真を撮影」「動画撮影」「録画停止」などの音声コマンドにも対応しております。
           </p>
         </div>
       </div>
@@ -391,7 +391,7 @@
       </button>
 
       <form id="chat-form" onsubmit="handleUserSubmit(event)" class="flex-1 flex items-center space-x-1">
-        <input type="text" id="user-input" placeholder="音声またはメッセージで指示 (例: 「翻訳モード」「東京の天気を検索」)" autocomplete="off" class="w-full bg-[#020712]/40 border border-theme/40 rounded-lg px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-theme font-mono">
+        <input type="text" id="user-input" placeholder="音声またはメッセージで指示 (例: 「カメラ起動」「写真撮影」「動画開始」)" autocomplete="off" class="w-full bg-[#020712]/40 border border-theme/40 rounded-lg px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-theme font-mono">
         
         <button type="submit" id="send-btn" class="p-1 sm:p-1.5 rounded-lg border border-theme bg-theme/20 hover:bg-theme text-white transition flex-shrink-0 font-bold text-xs">
           送信
@@ -438,11 +438,15 @@
       cameraActive: false,
       isListening: false,
       isSpeaking: false,
+      isRecordingVideo: false,
       selectedVoiceIndex: 0,
       availableVoices: [],
       apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || 'AQ.Ab8RN6JiOfdrLflMuTk0xsPuXT189ROg4umdy5qXDmgZptMXaw',
       currentImage: { base64: null, mimeType: null, dataUrl: null, source: null }
     };
+
+    let mediaRecorder = null;
+    let recordedChunks = [];
 
     const chatStream = document.getElementById('chat-stream');
     const userInput = document.getElementById('user-input');
@@ -716,11 +720,13 @@
     }
 
     /* ==========================================================================
-       4. WEBCAM & FILE HANDLERS
+       4. WEBCAM & FILE HANDLERS & RECORDING
        ========================================================================== */
-    async function toggleCamera() {
+    async function toggleCamera(forceState = null) {
       const videoEl = document.getElementById('webcam');
-      if (appState.cameraActive) {
+      const targetState = forceState !== null ? forceState : !appState.cameraActive;
+
+      if (!targetState) {
         if (videoEl.srcObject) {
           videoEl.srcObject.getTracks().forEach(track => track.stop());
           videoEl.srcObject = null;
@@ -728,29 +734,118 @@
         appState.cameraActive = false;
         videoEl.style.opacity = '0';
         showToast('カメラ停止');
+        return false;
       } else {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "environment" } 
+            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "environment" },
+            audio: true
           });
           videoEl.srcObject = stream;
           appState.cameraActive = true;
           videoEl.style.opacity = '0.85';
-          showToast('カメラ映像取得中');
+          showToast('カメラ起動完了');
           playBeep(900);
+          return true;
         } catch (err) {
           showToast('カメラアクセス失敗', 'error');
+          return false;
         }
       }
     }
 
-    async function captureCameraFrame() {
-      const videoEl = document.getElementById('webcam');
+    async function takePhotoAndSave() {
       if (!appState.cameraActive) {
-        await toggleCamera();
+        const ok = await toggleCamera(true);
+        if (!ok) return;
         await new Promise(r => setTimeout(r, 600));
       }
 
+      const videoEl = document.getElementById('webcam');
+      if (!videoEl.srcObject || videoEl.videoWidth === 0) {
+        showToast('カメラの準備ができていません', 'error');
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = videoEl.videoWidth || 1280;
+      canvas.height = videoEl.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `JARVIS_CAP_${Date.now()}.png`;
+      a.click();
+
+      showToast('写真を保存しました');
+      playJarvisChime();
+      speakText('写真を撮影し、保存いたしました、サー。');
+    }
+
+    async function startVideoRecording() {
+      if (!appState.cameraActive) {
+        const ok = await toggleCamera(true);
+        if (!ok) return;
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      const videoEl = document.getElementById('webcam');
+      const stream = videoEl.srcObject;
+      if (!stream) {
+        showToast('カメラが起動していません', 'error');
+        return;
+      }
+
+      recordedChunks = [];
+      try {
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      } catch (e) {
+        mediaRecorder = new MediaRecorder(stream);
+      }
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `JARVIS_REC_${Date.now()}.webm`;
+        a.click();
+        showToast('動画ファイルを保存しました');
+        speakText('動画の録画を終了し、保存いたしました、サー。');
+      };
+
+      mediaRecorder.start();
+      appState.isRecordingVideo = true;
+      document.getElementById('core-state-label').innerText = 'REC';
+      showToast('動画撮影を開始しました');
+      playBeep(1000);
+      speakText('動画の撮影を開始いたします。');
+    }
+
+    function stopVideoRecording() {
+      if (mediaRecorder && appState.isRecordingVideo) {
+        mediaRecorder.stop();
+        appState.isRecordingVideo = false;
+        document.getElementById('core-state-label').innerText = 'READY';
+      } else {
+        showToast('動画撮影は行われていません', 'error');
+      }
+    }
+
+    async function captureCameraFrame() {
+      if (!appState.cameraActive) {
+        await toggleCamera(true);
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      const videoEl = document.getElementById('webcam');
       if (!videoEl.srcObject || videoEl.videoWidth === 0) {
         showToast('カメラ準備中...', 'error');
         return false;
@@ -842,7 +937,7 @@
         micBtn.classList.add('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
         document.getElementById('mic-status-label').innerText = '認識中...';
         transcriptBox.classList.remove('hidden');
-        document.getElementById('core-state-label').innerText = 'LISTEN';
+        document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'LISTEN';
       };
 
       recognition.onresult = (e) => {
@@ -863,7 +958,7 @@
         appState.isListening = false;
         micBtn.classList.remove('bg-jarvis-gold/20', 'text-jarvis-gold', 'animate-pulse');
         document.getElementById('mic-status-label').innerText = '音声 ON';
-        document.getElementById('core-state-label').innerText = 'READY';
+        document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
 
         if (appState.autoListen && !appState.isSpeaking) {
           setTimeout(() => startVoiceRecognition(), 400);
@@ -908,6 +1003,43 @@
       appendChatMessage('USER', query || '[ビジュアル解析実行]', false, hasImg ? appState.currentImage.dataUrl : null);
 
       const qLower = query.toLowerCase();
+
+      // --- カメラ起動・操作コマンド ---
+      if (qLower.includes('カメラ') && (qLower.includes('起動') || qLower.includes('つけ') || qLower.includes('オン') || qLower.includes('開'))) {
+        await toggleCamera(true);
+        speakText('カメラを起動いたしました、サー。');
+        triggerLaserScan(false);
+        return;
+      }
+
+      if (qLower.includes('カメラ') && (qLower.includes('停止') || qLower.includes('消') || qLower.includes('オフ') || qLower.includes('閉'))) {
+        await toggleCamera(false);
+        speakText('カメラを停止いたしました、サー。');
+        triggerLaserScan(false);
+        return;
+      }
+
+      // --- 写真撮影コマンド ---
+      if (qLower.includes('写真') || qLower.includes('パシャ') || qLower.includes('撮影して') || qLower.includes('スナップショット')) {
+        if (!qLower.includes('動画')) {
+          await takePhotoAndSave();
+          triggerLaserScan(false);
+          return;
+        }
+      }
+
+      // --- 動画撮影コマンド ---
+      if (qLower.includes('動画') && (qLower.includes('撮影') || qLower.includes('開始') || qLower.includes('録画'))) {
+        await startVideoRecording();
+        triggerLaserScan(false);
+        return;
+      }
+
+      if (qLower.includes('録画') && (qLower.includes('停止') || qLower.includes('終了') || qLower.includes('ストップ')) || (qLower.includes('動画') && (qLower.includes('停止') || qLower.includes('終了')))) {
+        stopVideoRecording();
+        triggerLaserScan(false);
+        return;
+      }
 
       // 声の変更コマンド
       if (qLower.includes('声を変え') || qLower.includes('声変更') || qLower.includes('ボイス変更')) {
@@ -968,7 +1100,7 @@
         document.getElementById('core-state-label').innerText = 'SCAN';
       } else {
         laser.classList.add('hidden');
-        document.getElementById('core-state-label').innerText = 'READY';
+        document.getElementById('core-state-label').innerText = appState.isRecordingVideo ? 'REC' : 'READY';
       }
     }
 
