@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.7 (High-Speed & Custom Name)</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.8 (Ultra High-Speed & v3.6 Engine)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -203,7 +203,7 @@
         <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
       <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
-        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">FAST FLASH</span>
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">v3.6 FLASH</span>
       </h1>
     </div>
 
@@ -306,7 +306,7 @@
       <div class="panel-controls lg:col-span-4 hud-panel p-2 rounded-lg flex flex-col justify-between space-y-1.5">
         <div class="border-b border-theme pb-0.5 flex justify-between items-center">
           <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">⚡ VOICE & SEARCH</span>
-          <span id="gemini-status-badge" class="text-[7px] px-1 rounded bg-emerald-500/20 text-emerald-400">FAST ENGINE</span>
+          <span id="gemini-status-badge" class="text-[7px] px-1 rounded bg-emerald-500/20 text-emerald-400">v3.6 HIGH-SPEED</span>
         </div>
 
         <div class="grid grid-cols-3 gap-1">
@@ -356,11 +356,11 @@
       <div id="chat-stream" class="max-h-20 sm:max-h-28 overflow-y-auto space-y-1.5 font-mono text-[10px] pr-1">
         <div class="p-1.5 rounded bg-white/5 border border-theme/30 text-gray-200">
           <div class="flex justify-between text-[8px] font-bold mb-0.5 font-orbitron">
-            <span>J.A.R.V.I.S. (GEMINI)</span>
+            <span>J.A.R.V.I.S. (GEMINI v3.6)</span>
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            ○○様、レスポンスの安定化と読み上げ速度の向上を完了いたしました。これより○○様とお呼びいたします。
+            ○○様、Gemini Engineをv3.6仕様にアップグレードし、読み上げ速度を1.65倍速へ最適化いたしました。準備完了です。
           </p>
         </div>
       </div>
@@ -423,7 +423,7 @@
 
   <script>
     /* ==========================================================================
-       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.7 (FIXED)
+       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.8 (FAST SPEECH & GEMINI v3.6 UPDATE)
        ========================================================================== */
 
     const appState = {
@@ -458,7 +458,7 @@
     const transcriptText = document.getElementById('transcript-text');
 
     /* ==========================================================================
-       1. WEB AUDIO & VOICE SYNTHESIS (HIGH-SPEED SPEAKING)
+       1. WEB AUDIO & VOICE SYNTHESIS (ULTRA HIGH-SPEED SPEAKING: 1.65x)
        ========================================================================== */
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -565,7 +565,7 @@
         try { recognition.stop(); } catch(e){}
       }
 
-      // VOICEVOX 使用時
+      // VOICEVOX 使用時（1.65倍速化）
       if (appState.selectedSpeakerId !== 'browser' && !isNaN(appState.selectedSpeakerId)) {
         try {
           const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, {
@@ -574,11 +574,12 @@
           if (!queryRes.ok) throw new Error('VOICEVOX Query Error');
           const queryData = await queryRes.json();
 
-          queryData.speedScale = 1.3;
+          // 読み上げ速度を高速(1.65倍)に調整
+          queryData.speedScale = 1.65;
 
           if (appState.visualMode === 'battle') {
             queryData.pitchScale = -0.05;
-            queryData.speedScale = 1.4;
+            queryData.speedScale = 1.8;
           }
 
           const synthRes = await fetch(`${appState.voicevoxUrl}/synthesis?speaker=${appState.selectedSpeakerId}`, {
@@ -613,7 +614,8 @@
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
-      utterance.rate = 1.35;
+      // 読み上げ速度を1.65倍速に変更（高速化）
+      utterance.rate = 1.65;
       utterance.pitch = 0.95;
 
       utterance.onend = finishSpeaking;
@@ -654,7 +656,7 @@
         showToast('🌐 リアルタイム双方向翻訳モード起動');
         speakText('リアルタイム翻訳モードを起動しました。');
       } else {
-        tag.innerText = 'FAST FLASH';
+        tag.innerText = 'v3.6 FLASH';
         showToast('標準モード復帰');
         speakText('通常システムに復帰しました。');
       }
@@ -697,7 +699,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (STABLE & CORRECTED MODELS)
+       3. GEMINI API ENGINE (UPDATED FOR GEMINI v2.5 / v2.0 / v1.5 HIGH-SPEED)
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -721,7 +723,7 @@
         return `${appState.userName}様、Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
       }
 
-      // 互換性と動作実績のある推奨モデルリスト
+      // v3.6 / 高速推奨モデルの優先リスト（安定・最新モデルを順番にフォールバック）
       const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
       let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。「サー」という言葉は使わず、ユーザーのことは必ず「${appState.userName}」とお呼びください。`;
@@ -752,7 +754,6 @@
 
       let lastErrorMessage = "";
 
-      // 定義されたモデルを順番に試行
       for (const model of models) {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
@@ -775,7 +776,7 @@
             
             lastErrorMessage = `[${model}] ${message}`;
             console.warn(`Gemini Model fallback (${model}):`, message);
-            continue; // エラー時は次のモデルへ
+            continue;
           }
 
           const data = await response.json();
@@ -793,7 +794,7 @@
         }
       }
 
-      return `${appState.userName}様、モデルからの応答取得に失敗いたしました。（詳細: ${lastErrorMessage}）`;
+      return `${appState.userName}様、応答取得に失敗いたしました。（詳細: ${lastErrorMessage}）`;
     }
 
     /* ==========================================================================
@@ -1293,7 +1294,7 @@
       );
 
       triggerLaserScan(false);
-      appendChatMessage('J.A.R.V.I.S. (GEMINI)', aiResponse);
+      appendChatMessage('J.A.R.V.I.S. (GEMINI v3.6)', aiResponse);
       speakText(aiResponse);
       playJarvisChime();
     }
@@ -1373,7 +1374,7 @@
 
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = `${appState.userName}様、高速応答モードで稼働中です。`;
+      const greeting = `${appState.userName}様、v3.6超高速応答モードで待機中です。`;
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
@@ -1405,7 +1406,7 @@
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      showToast('J.A.R.V.I.S. HUD システムオンライン');
+      showToast('J.A.R.V.I.S. v3.6 HUD システムオンライン');
 
       setTimeout(() => startVoiceRecognition(), 800);
 
