@@ -360,7 +360,7 @@
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            システム正常稼働中です。右上「API設定」でキーを入力してください。
+            システム正常稼働中です。APIキーを設定済みです。
           </p>
         </div>
       </div>
@@ -409,9 +409,9 @@
         🔑 GEMINI API KEY CONFIGURATION
       </h2>
       <p class="text-[10px] text-gray-300">
-        Google Gemini AIを使用するためのAPIキーを入力してください。入力されたキーはローカルブラウザ内にのみ保存されます。
+        Google Gemini AIを使用するためのAPIキーを入力してください。
       </p>
-      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力 (AIzaSy...)" class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
+      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力" class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
       <div class="flex justify-end space-x-2 text-xs">
         <button onclick="closeApiKeyModal()" class="px-3 py-1 rounded bg-white/10 hover:bg-white/20">キャンセル</button>
         <button onclick="saveApiKey()" class="px-3 py-1 rounded bg-jarvis-gold/20 border border-jarvis-gold text-jarvis-gold font-bold hover:bg-jarvis-gold/40">保存</button>
@@ -435,7 +435,7 @@
       selectedSpeakerId: 'browser', 
       availableSpeakers: [],
       voicevoxUrl: 'http://localhost:50021', 
-      apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || '',
+      apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || 'AQ.Ab8RN6J5N0RctUHt879g46drW5JvN3P4MsG8OjyAarVv3Ldlmg',
       currentImage: { base64: null, mimeType: null, dataUrl: null, source: null }
     };
 
@@ -711,16 +711,16 @@
     }
 
     async function callGeminiApi(promptText, base64Image = null, mimeType = null) {
-      if (!appState.apiKey) {
+      const activeKey = appState.apiKey || 'AQ.Ab8RN6J5N0RctUHt879g46drW5JvN3P4MsG8OjyAarVv3Ldlmg';
+      if (!activeKey) {
         openApiKeyModal();
         return `Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
       }
 
-      // 互換性と高速性を備えた実績のある実在モデルリスト（優先順にフォールバック）
       const models = [
+        "gemini-2.5-flash",
         "gemini-2.0-flash",
         "gemini-1.5-flash",
-        "gemini-2.0-flash-lite",
         "gemini-1.5-pro"
       ];
 
@@ -753,14 +753,13 @@
       let lastErrorMessage = "";
 
       for (const model of models) {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(activeKey)}`;
 
         try {
           const response = await fetch(endpoint, {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": appState.apiKey
+              "Content-Type": "application/json"
             },
             body: JSON.stringify(requestBody)
           });
@@ -772,7 +771,7 @@
               message = errData.error?.message || message;
             } catch (_) {}
             lastErrorMessage = `[${model}] ${message}`;
-            continue; // 次の利用可能なモデルへ試行
+            continue;
           }
 
           const data = await response.json();
