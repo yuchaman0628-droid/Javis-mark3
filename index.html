@@ -694,7 +694,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE
+       3. GEMINI API ENGINE (FIXED & UPDATED MODELS)
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -718,7 +718,8 @@
         return `Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
       }
 
-      const models = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro-latest"];
+      // サポート対象の最新安定モデル一覧に更新
+      const models = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
 
       let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。`;
 
