@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.7 (High-Speed & Custom Name)</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.9 (Fixed Engine)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -203,7 +203,7 @@
         <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
       <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
-        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">FAST FLASH</span>
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">v3.6 FLASH</span>
       </h1>
     </div>
 
@@ -306,7 +306,7 @@
       <div class="panel-controls lg:col-span-4 hud-panel p-2 rounded-lg flex flex-col justify-between space-y-1.5">
         <div class="border-b border-theme pb-0.5 flex justify-between items-center">
           <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">⚡ VOICE & SEARCH</span>
-          <span id="gemini-status-badge" class="text-[7px] px-1 rounded bg-emerald-500/20 text-emerald-400">FAST ENGINE</span>
+          <span id="gemini-status-badge" class="text-[7px] px-1 rounded bg-emerald-500/20 text-emerald-400">v3.6 HIGH-SPEED</span>
         </div>
 
         <div class="grid grid-cols-3 gap-1">
@@ -356,11 +356,11 @@
       <div id="chat-stream" class="max-h-20 sm:max-h-28 overflow-y-auto space-y-1.5 font-mono text-[10px] pr-1">
         <div class="p-1.5 rounded bg-white/5 border border-theme/30 text-gray-200">
           <div class="flex justify-between text-[8px] font-bold mb-0.5 font-orbitron">
-            <span>J.A.R.V.I.S. (GEMINI)</span>
+            <span>J.A.R.V.I.S. (GEMINI v3.6)</span>
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            ○○様、レスポンスの安定化と読み上げ速度の向上を完了いたしました。これより○○様とお呼びいたします。
+            システム正常稼働中です。準備完了いたしました。
           </p>
         </div>
       </div>
@@ -422,12 +422,8 @@
   <div id="toast-container" class="fixed bottom-14 left-3 z-50 space-y-1 pointer-events-none"></div>
 
   <script>
-    /* ==========================================================================
-       J.A.R.V.I.S. GEMINI MULTIMODAL HUD SYSTEM V6.7 (FIXED)
-       ========================================================================== */
-
     const appState = {
-      userName: '○○', // ユーザーの呼び名
+      userName: 'ユーザー',
       isSmartphoneMode: false,
       visualMode: 'normal',
       zoomLevel: 1.0,
@@ -458,7 +454,7 @@
     const transcriptText = document.getElementById('transcript-text');
 
     /* ==========================================================================
-       1. WEB AUDIO & VOICE SYNTHESIS (HIGH-SPEED SPEAKING)
+       1. WEB AUDIO & VOICE SYNTHESIS
        ========================================================================== */
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -503,7 +499,7 @@
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1200);
+        const timeoutId = setTimeout(() => controller.abort(), 1000);
 
         const response = await fetch(`${appState.voicevoxUrl}/speakers`, { signal: controller.signal });
         clearTimeout(timeoutId);
@@ -527,7 +523,9 @@
             });
           });
         }
-      } catch (e) {}
+      } catch (e) {
+        // VOICEVOX未起動時は静かにフォールバック
+      }
     }
 
     function changeVoice(speakerId = null) {
@@ -537,7 +535,7 @@
       const selectedOption = select.options[select.selectedIndex];
       const speakerName = selectedOption ? selectedOption.innerText : '標準音声';
       showToast(`音声設定変更: ${speakerName}`);
-      speakText(`音声の設定を変更いたしました、${appState.userName}様。`);
+      speakText(`音声の設定を変更いたしました。`);
     }
 
     function cycleNextVoice() {
@@ -553,7 +551,9 @@
         currentAudio.pause();
         currentAudio = null;
       }
-      window.speechSynthesis.cancel();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
 
       const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/https?:\/\/\S+/g, '').trim();
       if (!cleanText) return;
@@ -565,7 +565,6 @@
         try { recognition.stop(); } catch(e){}
       }
 
-      // VOICEVOX 使用時
       if (appState.selectedSpeakerId !== 'browser' && !isNaN(appState.selectedSpeakerId)) {
         try {
           const queryRes = await fetch(`${appState.voicevoxUrl}/audio_query?text=${encodeURIComponent(cleanText)}&speaker=${appState.selectedSpeakerId}`, {
@@ -574,11 +573,10 @@
           if (!queryRes.ok) throw new Error('VOICEVOX Query Error');
           const queryData = await queryRes.json();
 
-          queryData.speedScale = 1.3;
-
+          queryData.speedScale = 1.65;
           if (appState.visualMode === 'battle') {
             queryData.pitchScale = -0.05;
-            queryData.speedScale = 1.4;
+            queryData.speedScale = 1.8;
           }
 
           const synthRes = await fetch(`${appState.voicevoxUrl}/synthesis?speaker=${appState.selectedSpeakerId}`, {
@@ -596,13 +594,12 @@
           currentAudio.onerror = () => speakTextWebSpeech(cleanText);
           await currentAudio.play();
           return;
-
         } catch (err) {
-          console.warn('VOICEVOX発声失敗。Web Speech APIへフォールバック:', err);
+          speakTextWebSpeech(cleanText);
         }
+      } else {
+        speakTextWebSpeech(cleanText);
       }
-
-      speakTextWebSpeech(cleanText);
     }
 
     function speakTextWebSpeech(text) {
@@ -613,7 +610,7 @@
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
-      utterance.rate = 1.35;
+      utterance.rate = 1.65;
       utterance.pitch = 0.95;
 
       utterance.onend = finishSpeaking;
@@ -654,7 +651,7 @@
         showToast('🌐 リアルタイム双方向翻訳モード起動');
         speakText('リアルタイム翻訳モードを起動しました。');
       } else {
-        tag.innerText = 'FAST FLASH';
+        tag.innerText = 'v3.6 FLASH';
         showToast('標準モード復帰');
         speakText('通常システムに復帰しました。');
       }
@@ -697,7 +694,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (STABLE & CORRECTED MODELS)
+       3. GEMINI API ENGINE
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -718,13 +715,12 @@
     async function callGeminiApi(promptText, base64Image = null, mimeType = null) {
       if (!appState.apiKey) {
         openApiKeyModal();
-        return `${appState.userName}様、Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
+        return `Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
       }
 
-      // 互換性と動作実績のある推奨モデルリスト
-      const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+      const models = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro-latest"];
 
-      let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。「サー」という言葉は使わず、ユーザーのことは必ず「${appState.userName}」とお呼びください。`;
+      let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。`;
 
       if (appState.visualMode === "translate") {
         systemInstruction = "あなたはリアルタイム通訳HUDシステムです。入力された言語を解析し、日本語なら自然な英語へ、英語やその他の外国語なら自然な日本語へ正確かつ迅速に翻訳し、翻訳後の文章のみを出力してください。";
@@ -752,7 +748,6 @@
 
       let lastErrorMessage = "";
 
-      // 定義されたモデルを順番に試行
       for (const model of models) {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
@@ -772,10 +767,8 @@
               const errData = await response.json();
               message = errData.error?.message || message;
             } catch (_) {}
-            
             lastErrorMessage = `[${model}] ${message}`;
-            console.warn(`Gemini Model fallback (${model}):`, message);
-            continue; // エラー時は次のモデルへ
+            continue;
           }
 
           const data = await response.json();
@@ -786,14 +779,12 @@
               .trim();
 
           if (textResult) return textResult;
-
         } catch (err) {
-          console.error(`Gemini API Error (${model}):`, err);
           lastErrorMessage = `[${model}] ${err.message || "通信エラー"}`;
         }
       }
 
-      return `${appState.userName}様、モデルからの応答取得に失敗いたしました。（詳細: ${lastErrorMessage}）`;
+      return `応答取得に失敗いたしました。（詳細: ${lastErrorMessage}）`;
     }
 
     /* ==========================================================================
@@ -856,7 +847,6 @@
       ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
       const dataUrl = canvas.toDataURL('image/png');
-      
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `JARVIS_CAP_${Date.now()}.png`;
@@ -864,7 +854,7 @@
 
       showToast('写真を保存しました');
       playJarvisChime();
-      speakText(`写真を撮影し、保存いたしました、${appState.userName}様。`);
+      speakText(`写真を撮影し、保存いたしました。`);
     }
 
     async function startVideoRecording() {
@@ -899,7 +889,7 @@
         a.download = `JARVIS_REC_${Date.now()}.webm`;
         a.click();
         showToast('動画ファイルを保存しました');
-        speakText(`動画の録画を終了し、保存いたしました、${appState.userName}様。`);
+        speakText(`動画の録画を終了し、保存いたしました。`);
       };
 
       mediaRecorder.start();
@@ -1030,11 +1020,7 @@
 
       try {
         audioRecordingStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          },
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
           video: false
         });
 
@@ -1054,10 +1040,7 @@
           const finalType = audioRecorder?.mimeType || mimeType || 'audio/webm';
           const blob = new Blob(audioRecordedChunks, { type: finalType });
           const url = URL.createObjectURL(blob);
-
-          const extension = finalType.includes('mp4') ? 'm4a'
-            : finalType.includes('ogg') ? 'ogg'
-            : 'webm';
+          const extension = finalType.includes('mp4') ? 'm4a' : finalType.includes('ogg') ? 'ogg' : 'webm';
 
           const link = document.createElement('a');
           link.href = url;
@@ -1076,11 +1059,7 @@
           audioRecordedChunks = [];
           showToast('音声録音を保存しました');
           playJarvisChime();
-          speakText(`音声録音を保存いたしました、${appState.userName}様。`);
-        };
-
-        audioRecorder.onerror = () => {
-          showToast('音声録音中にエラーが発生しました', 'error');
+          speakText(`音声録音を保存いたしました。`);
         };
 
         audioRecorder.start(250);
@@ -1090,7 +1069,6 @@
         showToast('音声録音を開始しました');
         playBeep(1000);
       } catch (err) {
-        console.error('Audio recording error:', err);
         if (audioRecordingStream) {
           audioRecordingStream.getTracks().forEach(track => track.stop());
           audioRecordingStream = null;
@@ -1104,7 +1082,6 @@
         showToast('音声録音は行われていません', 'error');
         return;
       }
-
       audioRecorder.stop();
       document.getElementById('audio-record-label').innerText = '録音';
       document.getElementById('audio-record-btn').classList.remove('bg-jarvis-red/30', 'text-jarvis-red', 'animate-pulse');
@@ -1153,9 +1130,6 @@
       };
 
       recognition.onerror = (err) => { 
-        if (err.error !== 'no-speech') {
-          console.warn('音声認識エラー:', err.error); 
-        }
         appState.isListening = false;
       };
 
@@ -1173,9 +1147,7 @@
 
     function startVoiceRecognition() {
       if (recognition && !appState.isListening && !appState.isSpeaking) {
-        try { 
-          recognition.start(); 
-        } catch(e) {}
+        try { recognition.start(); } catch(e){}
       }
     }
 
@@ -1196,7 +1168,6 @@
     /* ==========================================================================
        7. CORE SUBMISSION & INTENT DISPATCHER
        ========================================================================== */
-       
     async function searchScreenContent() {
       userInput.value = "画面を検索";
       handleUserSubmit(null);
@@ -1218,14 +1189,14 @@
 
       if (qLower.includes('カメラ') && (qLower.includes('起動') || qLower.includes('つけ') || qLower.includes('オン') || qLower.includes('開'))) {
         await toggleCamera(true);
-        speakText(`カメラを起動いたしました、${appState.userName}様。`);
+        speakText(`カメラを起動いたしました。`);
         triggerLaserScan(false);
         return;
       }
 
       if (qLower.includes('カメラ') && (qLower.includes('停止') || qLower.includes('消') || qLower.includes('オフ') || qLower.includes('閉'))) {
         await toggleCamera(false);
-        speakText(`カメラを停止いたしました、${appState.userName}様。`);
+        speakText(`カメラを停止いたしました。`);
         triggerLaserScan(false);
         return;
       }
@@ -1238,9 +1209,9 @@
         }
       }
 
-      const hasAudioRecorderWord = qLower.includes('録音') || qLower.includes('音声録音') || qLower.includes('ボイスレコーダー') || qLower.includes('レコーダー');
-      const wantsAudioStart = qLower.includes('録音開始') || qLower.includes('録音スタート') || qLower.includes('録音して') || (hasAudioRecorderWord && (qLower.includes('開始') || qLower.includes('スタート')));
-      const wantsAudioStop = qLower.includes('録音停止') || qLower.includes('録音終了') || qLower.includes('録音ストップ') || qLower.includes('録音やめて') || (hasAudioRecorderWord && (qLower.includes('停止') || qLower.includes('終了') || qLower.includes('ストップ')));
+      const hasAudioRecorderWord = qLower.includes('録音') || qLower.includes('音声録音') || qLower.includes('ボイスレコーダー');
+      const wantsAudioStart = qLower.includes('録音開始') || qLower.includes('録音スタート') || qLower.includes('録音して');
+      const wantsAudioStop = qLower.includes('録音停止') || qLower.includes('録音終了') || qLower.includes('録音ストップ') || qLower.includes('録音やめて');
       const isVideoCommand = qLower.includes('動画') || qLower.includes('録画');
 
       if (!isVideoCommand && hasAudioRecorderWord && wantsAudioStart) { await startAudioRecording(); triggerLaserScan(false); return; }
@@ -1248,7 +1219,8 @@
 
       if (qLower.includes('動画') && (qLower.includes('撮影') || qLower.includes('開始') || qLower.includes('録画'))) { await startVideoRecording(); triggerLaserScan(false); return; }
       if ((qLower.includes('録画') && (qLower.includes('停止') || qLower.includes('終了') || qLower.includes('ストップ'))) || (qLower.includes('動画') && (qLower.includes('停止') || qLower.includes('終了')))) {
-        stopVideoRecording(); triggerLaserScan(false); return; }
+        stopVideoRecording(); triggerLaserScan(false); return;
+      }
 
       if (qLower.includes('声を変え') || qLower.includes('声変更') || qLower.includes('ボイス変更')) { cycleNextVoice(); triggerLaserScan(false); return; }
       if (qLower.includes('翻訳モード') || qLower.includes('通訳モード')) { setSystemVisualMode('translate'); triggerLaserScan(false); return; }
@@ -1270,8 +1242,8 @@
           await captureCameraFrame();
         }
         if (!appState.currentImage.base64) {
-           appendChatMessage('J.A.R.V.I.S.', `${appState.userName}様、対象の画像がありません。カメラを起動するか、画像をアップロードしてください。`);
-           speakText(`${appState.userName}様、対象の画像がありません。カメラを起動するか、画像をアップロードしてください。`);
+           appendChatMessage('J.A.R.V.I.S.', `対象の画像がありません。カメラを起動するか、画像をアップロードしてください。`);
+           speakText(`対象の画像がありません。カメラを起動するか、画像をアップロードしてください。`);
            triggerLaserScan(false);
            return;
         }
@@ -1293,7 +1265,7 @@
       );
 
       triggerLaserScan(false);
-      appendChatMessage('J.A.R.V.I.S. (GEMINI)', aiResponse);
+      appendChatMessage('J.A.R.V.I.S. (GEMINI v3.6)', aiResponse);
       speakText(aiResponse);
       playJarvisChime();
     }
@@ -1373,7 +1345,7 @@
 
     function triggerJarvisGreeting() {
       playJarvisChime();
-      const greeting = `${appState.userName}様、高速応答モードで稼働中です。`;
+      const greeting = `システム正常稼働中です。`;
       appendChatMessage('J.A.R.V.I.S.', greeting);
       speakText(greeting);
     }
@@ -1405,7 +1377,7 @@
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      showToast('J.A.R.V.I.S. HUD システムオンライン');
+      showToast('J.A.R.V.I.S. v6.9 システムオンライン');
 
       setTimeout(() => startVoiceRecognition(), 800);
 
