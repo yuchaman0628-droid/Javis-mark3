@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v7.0</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.9 (Fixed Engine)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -203,7 +203,7 @@
         <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
       <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
-        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">GEMINI 3.6 FLASH</span>
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">v3.6 FLASH</span>
       </h1>
     </div>
 
@@ -306,7 +306,7 @@
       <div class="panel-controls lg:col-span-4 hud-panel p-2 rounded-lg flex flex-col justify-between space-y-1.5">
         <div class="border-b border-theme pb-0.5 flex justify-between items-center">
           <span class="text-[10px] font-orbitron font-bold flex items-center gap-1">⚡ VOICE & SEARCH</span>
-          <span id="gemini-status-badge" class="text-[7px] px-1 rounded bg-emerald-500/20 text-emerald-400">HIGH-SPEED</span>
+          <span id="gemini-status-badge" class="text-[7px] px-1 rounded bg-emerald-500/20 text-emerald-400">v3.6 HIGH-SPEED</span>
         </div>
 
         <div class="grid grid-cols-3 gap-1">
@@ -356,11 +356,11 @@
       <div id="chat-stream" class="max-h-20 sm:max-h-28 overflow-y-auto space-y-1.5 font-mono text-[10px] pr-1">
         <div class="p-1.5 rounded bg-white/5 border border-theme/30 text-gray-200">
           <div class="flex justify-between text-[8px] font-bold mb-0.5 font-orbitron">
-            <span>J.A.R.V.I.S. (GEMINI AI)</span>
+            <span>J.A.R.V.I.S. (GEMINI v3.6)</span>
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            システム正常稼働中です。APIキーを設定済みです。
+            システム正常稼働中です。準備完了いたしました。
           </p>
         </div>
       </div>
@@ -387,7 +387,7 @@
       </button>
 
       <form id="chat-form" onsubmit="handleUserSubmit(event)" class="flex-1 flex items-center space-x-1">
-        <input type="text" id="user-input" placeholder="指示を入力 (例: 「こんにちは」「これ検索」「写真撮影」)" autocomplete="off" class="w-full bg-[#020712]/40 border border-theme/40 rounded-lg px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-theme font-mono">
+        <input type="text" id="user-input" placeholder="指示を入力 (例: 「これを検索」「カメラ起動」「写真撮影」)" autocomplete="off" class="w-full bg-[#020712]/40 border border-theme/40 rounded-lg px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-theme font-mono">
         
         <button type="submit" id="send-btn" class="p-1 sm:p-1.5 rounded-lg border border-theme bg-theme/20 hover:bg-theme text-white transition flex-shrink-0 font-bold text-xs">
           送信
@@ -409,9 +409,9 @@
         🔑 GEMINI API KEY CONFIGURATION
       </h2>
       <p class="text-[10px] text-gray-300">
-        Google AI Studioで取得したGemini APIキー（AIzaSy...から始まるキー）を入力してください。
+        Google Gemini AIによるリアルタイム会話・WEB検索・画像解析機能を使用するためのAPIキーを入力してください。
       </p>
-      <input type="password" id="gemini-api-key-input" placeholder="AIzaSy..." class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
+      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力 (AIzaSy...)" class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
       <div class="flex justify-end space-x-2 text-xs">
         <button onclick="closeApiKeyModal()" class="px-3 py-1 rounded bg-white/10 hover:bg-white/20">キャンセル</button>
         <button onclick="saveApiKey()" class="px-3 py-1 rounded bg-jarvis-gold/20 border border-jarvis-gold text-jarvis-gold font-bold hover:bg-jarvis-gold/40">保存</button>
@@ -435,7 +435,7 @@
       selectedSpeakerId: 'browser', 
       availableSpeakers: [],
       voicevoxUrl: 'http://localhost:50021', 
-      apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || 'AQ.Ab8RN6J5N0RctUHt879g46drW5JvN3P4MsG8OjyAarVv3Ldlmg',
+      apiKey: localStorage.getItem('JARVIS_GEMINI_API_KEY') || '',
       currentImage: { base64: null, mimeType: null, dataUrl: null, source: null }
     };
 
@@ -523,7 +523,9 @@
             });
           });
         }
-      } catch (e) {}
+      } catch (e) {
+        // VOICEVOX未起動時は静かにフォールバック
+      }
     }
 
     function changeVoice(speakerId = null) {
@@ -649,7 +651,7 @@
         showToast('🌐 リアルタイム双方向翻訳モード起動');
         speakText('リアルタイム翻訳モードを起動しました。');
       } else {
-        tag.innerText = 'GEMINI 3.6 FLASH';
+        tag.innerText = 'v3.6 FLASH';
         showToast('標準モード復帰');
         speakText('通常システムに復帰しました。');
       }
@@ -692,7 +694,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (UPDATED TO GEMINI 3.6 FLASH)
+       3. GEMINI API ENGINE (LATEST MODEL SUPPORT)
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -711,16 +713,17 @@
     }
 
     async function callGeminiApi(promptText, base64Image = null, mimeType = null) {
-      const activeKey = appState.apiKey || '';
-      if (!activeKey) {
+      if (!appState.apiKey) {
         openApiKeyModal();
-        return `Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからGoogle AI Studioで取得したキーをご登録ください。`;
+        return `Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
       }
 
-      // エラーログで推奨されている gemini-3.6-flash および gemini-3-flash を使用
+      // 最新モデルを優先順位に従ってフォールバック試行
       const models = [
-        "gemini-3.6-flash",
-        "gemini-3-flash"
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
       ];
 
       let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。`;
@@ -749,10 +752,10 @@
         }
       };
 
-      let errorLogs = [];
+      let lastErrorMessage = "";
 
       for (const model of models) {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(activeKey)}`;
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(appState.apiKey)}`;
 
         try {
           const response = await fetch(endpoint, {
@@ -769,7 +772,7 @@
               const errData = await response.json();
               message = errData.error?.message || message;
             } catch (_) {}
-            errorLogs.push(`[${model}] ${message}`);
+            lastErrorMessage = `[${model}] ${message}`;
             continue;
           }
 
@@ -782,11 +785,11 @@
 
           if (textResult) return textResult;
         } catch (err) {
-          errorLogs.push(`[${model}] ${err.message || "ネットワークエラー"}`);
+          lastErrorMessage = `[${model}] ${err.message || "通信エラー"}`;
         }
       }
 
-      return `AIからの応答取得に失敗しました。\nAPIキー（Google AI Studioで発行される AIzaSy... から始まる文字列）が正しく有効であるかご確認ください。\n\n詳細エラー:\n${errorLogs.join('\n')}`;
+      return `応答取得に失敗いたしました。（詳細: ${lastErrorMessage}）`;
     }
 
     /* ==========================================================================
@@ -1266,7 +1269,7 @@
       );
 
       triggerLaserScan(false);
-      appendChatMessage('J.A.R.V.I.S.', aiResponse);
+      appendChatMessage('J.A.R.V.I.S. (GEMINI v3.6)', aiResponse);
       speakText(aiResponse);
       playJarvisChime();
     }
@@ -1378,7 +1381,7 @@
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      showToast('J.A.R.V.I.S. システムオンライン');
+      showToast('J.A.R.V.I.S. v6.9 システムオンライン');
 
       setTimeout(() => startVoiceRecognition(), 800);
 
