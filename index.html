@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.9 (Fixed Engine)</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.9.1 (Fixed API)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -360,7 +360,7 @@
             <span>SYSTEM ONLINE</span>
           </div>
           <p id="latest-response" class="leading-relaxed">
-            システム正常稼働中です。準備完了いたしました。
+            システム正常稼働中です。画面右上の「🔑 API設定」からAIzaSy...で始まるAPIキーをご登録ください。
           </p>
         </div>
       </div>
@@ -408,10 +408,10 @@
       <h2 class="text-sm font-orbitron font-bold text-jarvis-gold flex items-center gap-1.5">
         🔑 GEMINI API KEY CONFIGURATION
       </h2>
-      <p class="text-[10px] text-gray-300">
-        Google Gemini AIによるリアルタイム会話・WEB検索・画像解析機能を使用するためのAPIキーを入力してください。
+      <p class="text-[10px] text-gray-300 leading-relaxed">
+        Google AI Studio (<a href="https://aistudio.google.com/" target="_blank" class="text-jarvis-cyan underline">aistudio.google.com</a>) で取得した <b class="text-jarvis-gold">AIzaSy...</b> から始まるAPIキーを入力してください。
       </p>
-      <input type="password" id="gemini-api-key-input" placeholder="APIキーを入力 (AIzaSy...)" class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
+      <input type="password" id="gemini-api-key-input" placeholder="AIzaSy..." class="w-full bg-black/60 border border-theme/60 rounded px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-jarvis-gold">
       <div class="flex justify-end space-x-2 text-xs">
         <button onclick="closeApiKeyModal()" class="px-3 py-1 rounded bg-white/10 hover:bg-white/20">キャンセル</button>
         <button onclick="saveApiKey()" class="px-3 py-1 rounded bg-jarvis-gold/20 border border-jarvis-gold text-jarvis-gold font-bold hover:bg-jarvis-gold/40">保存</button>
@@ -523,9 +523,7 @@
             });
           });
         }
-      } catch (e) {
-        // VOICEVOX未起動時は静かにフォールバック
-      }
+      } catch (e) {}
     }
 
     function changeVoice(speakerId = null) {
@@ -694,7 +692,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (LATEST MODEL SUPPORT)
+       3. GEMINI API ENGINE (ENHANCED ERROR HANDLING & FORMAT CHECK)
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -715,15 +713,18 @@
     async function callGeminiApi(promptText, base64Image = null, mimeType = null) {
       if (!appState.apiKey) {
         openApiKeyModal();
-        return `Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからキーをご登録ください。`;
+        return `Gemini APIキーが設定されておりません。画面右上の「🔑 API設定」ボタンからキーをご登録ください。`;
       }
 
-      // 最新モデルを優先順位に従ってフォールバック試行
+      // APIキーの簡易形式確認
+      if (!appState.apiKey.startsWith('AIzaSy')) {
+        return `⚠️ APIキーの形式が正しくない可能性があります。Google AI Studio (https://aistudio.google.com/) で発行された 「AIzaSy...」 から始まる正当なAPIキーを「🔑 API設定」に入力してください。`;
+      }
+
       const models = [
         "gemini-2.5-flash",
         "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro"
+        "gemini-1.5-flash"
       ];
 
       let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。`;
@@ -789,7 +790,7 @@
         }
       }
 
-      return `応答取得に失敗いたしました。（詳細: ${lastErrorMessage}）`;
+      return `応答取得に失敗いたしました。（詳細: ${lastErrorMessage}）\n※ APIキーが無効であるか、権限がない可能性があります。「🔑 API設定」をご確認ください。`;
     }
 
     /* ==========================================================================
@@ -1381,7 +1382,7 @@
       initVoiceList();
       setInterval(updateClock, 1000);
       
-      showToast('J.A.R.V.I.S. v6.9 システムオンライン');
+      showToast('J.A.R.V.I.S. v6.9.1 システムオンライン');
 
       setTimeout(() => startVoiceRecognition(), 800);
 
