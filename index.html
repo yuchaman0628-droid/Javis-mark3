@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>J.A.R.V.I.S. Multimodal Vision HUD System v6.9 (Fixed Engine)</title>
+  <title>J.A.R.V.I.S. Multimodal Vision HUD System v7.0</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -203,7 +203,7 @@
         <div class="w-2 h-2 rounded-full" style="background-color: var(--theme-color);"></div>
       </div>
       <h1 class="text-xs sm:text-sm font-black tracking-widest text-glow flex items-center gap-1.5" style="color: var(--theme-color);">
-        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">GEMINI FLASH</span>
+        J.A.R.V.I.S. <span id="system-mode-tag" class="text-[8px] px-1 rounded border border-theme font-mono font-normal">GEMINI 3.6 FLASH</span>
       </h1>
     </div>
 
@@ -649,7 +649,7 @@
         showToast('🌐 リアルタイム双方向翻訳モード起動');
         speakText('リアルタイム翻訳モードを起動しました。');
       } else {
-        tag.innerText = 'GEMINI FLASH';
+        tag.innerText = 'GEMINI 3.6 FLASH';
         showToast('標準モード復帰');
         speakText('通常システムに復帰しました。');
       }
@@ -692,7 +692,7 @@
     }
 
     /* ==========================================================================
-       3. GEMINI API ENGINE (FIXED MODEL ENDPOINTS & ERROR HANDLING)
+       3. GEMINI API ENGINE (UPDATED TO GEMINI 3.6 FLASH)
        ========================================================================== */
     function openApiKeyModal() {
       document.getElementById('gemini-api-key-input').value = appState.apiKey;
@@ -717,11 +717,10 @@
         return `Gemini APIキーが設定されておりません。画面右上の「API設定」ボタンからGoogle AI Studioで取得したキーをご登録ください。`;
       }
 
-      // v1betaで確実に動作する標準モデルリスト
+      // エラーログで推奨されている gemini-3.6-flash および gemini-3-flash を使用
       const models = [
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
+        "gemini-3.6-flash",
+        "gemini-3-flash"
       ];
 
       let systemInstruction = `あなたはアイアンマンのAI「J.A.R.V.I.S. (ジャービス)」です。正確で結論から述べる簡潔かつスマートなトーンで回答してください。`;
